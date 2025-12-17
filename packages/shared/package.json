@@ -1,0 +1,22 @@
+{
+  "name": "@tenjo/shared",
+  "version": "1.0.0",
+  "description": "Tipos y utilidades compartidas entre frontend y backend",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch"
+  },
+  "keywords": [
+    "shared",
+    "types",
+    "dto"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}
