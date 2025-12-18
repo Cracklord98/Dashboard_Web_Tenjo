@@ -5,7 +5,9 @@
 export const APP_CONFIG = {
   name: 'Tenjo Dashboard',
   version: '1.0.0',
-  apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:3000',
+  // Si VITE_API_URL está vacío, usa '' para aprovechar el proxy de Vite
+  // Si está definido, usa ese valor (útil para producción)
+  apiUrl: import.meta.env.VITE_API_URL?.trim() || '',
 } as const;
 
 export const ROUTES = {

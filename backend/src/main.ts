@@ -6,6 +6,8 @@ import { config } from './config/env';
 import { errorHandler } from './config/errorHandler';
 import seguimientoRoutes from './routes/seguimiento';
 import indicadoresRoutes from './routes/indicadores';
+import financieroRoutes from './routes/financiero';
+import metasProductoRoutes from './routes/metasProducto';
 
 const app = express();
 
@@ -45,7 +47,9 @@ app.get('/', (_req: express.Request, res: express.Response) => {
     endpoints: {
       health: '/health',
       indicadores: '/api/indicadores',
-      seguimiento: '/api/seguimiento'
+      seguimiento: '/api/seguimiento',
+      financiero: '/api/financiero',
+      metasProducto: '/api/metas-producto'
     }
   });
 });
@@ -53,6 +57,8 @@ app.get('/', (_req: express.Request, res: express.Response) => {
 // Rutas de la API
 app.use('/api/seguimiento', seguimientoRoutes);
 app.use('/api/indicadores', indicadoresRoutes);
+app.use('/api/financiero', financieroRoutes);
+app.use('/api/metas-producto', metasProductoRoutes);
 
 // Manejo de errores
 app.use(errorHandler);

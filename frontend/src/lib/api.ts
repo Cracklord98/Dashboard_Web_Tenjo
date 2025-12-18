@@ -89,6 +89,37 @@ export async function obtenerSeguimientoPorId(id: string): Promise<Seguimiento> 
   return request(`/api/seguimiento/${id}`);
 }
 
+// ===== METAS DE PRODUCTO =====
+
+import type { 
+  MetaProducto, 
+  FiltrosMetaProducto, 
+  MetasProductoResponse 
+} from '../types/metaProducto';
+
+export async function obtenerMetasProducto(filtros?: FiltrosMetaProducto): Promise<MetasProductoResponse> {
+  const params = new URLSearchParams();
+  
+  if (filtros) {
+    if (filtros.busqueda) params.append('busqueda', filtros.busqueda);
+    if (filtros.programas?.length) params.append('programas', filtros.programas.join(','));
+    if (filtros.evaluaciones?.length) params.append('evaluaciones', filtros.evaluaciones.join(','));
+    if (filtros.estados?.length) params.append('estados', filtros.estados.join(','));
+    if (filtros.responsables?.length) params.append('responsables', filtros.responsables.join(','));
+    if (filtros.año) params.append('año', filtros.año.toString());
+    if (filtros.trimestre) params.append('trimestre', filtros.trimestre.toString());
+  }
+
+  const queryString = params.toString();
+  const endpoint = queryString ? `/api/metas-producto?${queryString}` : '/api/metas-producto';
+  
+  return request(endpoint);
+}
+
+export async function obtenerMetaPorId(id: string): Promise<MetaProducto> {
+  return request(`/api/metas-producto/${id}`);
+}
+
 // ===== HEALTH CHECK =====
 
 export async function checkHealth(): Promise<{ status: string; timestamp: string }> {
