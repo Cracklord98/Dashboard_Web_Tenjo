@@ -4,6 +4,7 @@ import { useSidebar } from "../context/SidebarContext";
 import { ThemeToggleButton } from "../components/common/ThemeToggleButton";
 import NotificationDropdown from "../components/header/NotificationDropdown";
 // import UserDropdown from "../components/header/UserDropdown"; // Comentado: No se usa por ahora
+import escudoTenjo from "../assets/brand/ESCUDO2024.png";
 
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
@@ -84,7 +85,7 @@ const AppHeader: React.FC = () => {
 
           <div className="lg:hidden flex flex-col">
             <div className="flex items-center gap-2">
-              <img src="/images/brand/ESCUDO2024.png" alt="Escudo Tenjo" className="w-8 h-8 object-contain" />
+              <img src={escudoTenjo} alt="Escudo Tenjo" className="w-8 h-8 object-contain" />
               <div>
                 <p className="text-xs font-semibold text-white uppercase tracking-wide">ALCALDÍA MUNICIPAL</p>
                 <p className="text-sm font-bold text-white">Tenjo, Cundinamarca</p>
@@ -94,7 +95,7 @@ const AppHeader: React.FC = () => {
 
           {/* Título visible solo en desktop */}
           <div className="hidden lg:flex items-center gap-3 ml-4">
-            <img src="/images/brand/ESCUDO2024.png" alt="Escudo Tenjo" className="w-12 h-12 object-contain" />
+            <img src={escudoTenjo} alt="Escudo Tenjo" className="w-12 h-12 object-contain" />
             <div>
               <p className="text-xs font-semibold text-white/90 uppercase tracking-wider">ALCALDÍA MUNICIPAL</p>
               <p className="text-lg font-bold text-white">Tenjo, Cundinamarca</p>
