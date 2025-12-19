@@ -15,8 +15,28 @@ const app = express();
 
 // Middlewares de seguridad
 app.use(helmet());
+
+// Configuración de CORS robusta
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://dashboard-web-tenjo-frontend.vercel.app'
+];
+
 app.use(cors({
-  origin: config.corsOrigin,
+  origin: (origin, callback) => {
+    // Permitir peticiones sin origen (como Postman o herramientas de servidor)
+    if (!origin) return callback(null, true);
+    
+    // Limpiar el origen de barras finales para la comparación
+    const cleanOrigin = origin.replace(/\/$/, '');
+    
+    if (allowedOrigins.includes(cleanOrigin) || cleanOrigin === config.corsOrigin || config.nodeEnv === 'development') {
+      callback(null, true);
+    } else {
+      logger.warn(`🚫 Origen bloqueado por CORS: ${origin}`);
+      callback(new Error('No permitido por CORS'));
+    }
+  },
   credentials: true
 }));
 
