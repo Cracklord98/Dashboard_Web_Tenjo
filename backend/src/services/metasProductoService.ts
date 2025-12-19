@@ -59,6 +59,13 @@ interface MetaProducto {
   t3Ejecutado2025?: number;
   t4Planeado2025?: number;
   t4Ejecutado2025?: number;
+  
+  // Campos adicionales
+  lineaBase?: string;
+  indicador?: string;
+  unidadMedida?: string;
+  codigoMeta?: string;
+  observaciones?: string;
 }
 
 interface MetaDetalle extends MetaProducto {
