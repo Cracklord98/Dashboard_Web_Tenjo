@@ -24,14 +24,18 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Permitir peticiones sin origen (como Postman o herramientas de servidor)
+    // Permitir peticiones sin origen (como Postman)
     if (!origin) return callback(null, true);
     
-    // Limpiar el origen de barras finales para la comparación
     const cleanOrigin = origin.replace(/\/$/, '');
-    
-    if (allowedOrigins.includes(cleanOrigin) || cleanOrigin === config.corsOrigin || config.nodeEnv === 'development') {
-      callback(null, true);
+    const isAllowed = allowedOrigins.includes(cleanOrigin) || 
+                     cleanOrigin === config.corsOrigin || 
+                     config.nodeEnv === 'development';
+
+    if (isAllowed) {
+      // IMPORTANTE: Respondemos con el 'origin' exacto de la petición
+      // para evitar discrepancias de barras diagonales
+      callback(null, origin);
     } else {
       logger.warn(`🚫 Origen bloqueado por CORS: ${origin}`);
       callback(new Error('No permitido por CORS'));
