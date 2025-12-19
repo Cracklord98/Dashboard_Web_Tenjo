@@ -10,6 +10,8 @@ import {
   PageIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
+import imgPlaneacion from "../assets/brand/planeacion.jpg";
+import imgQuantika from "../assets/brand/quantika.jpeg";
 
 type NavItem = {
   name: string;
@@ -341,7 +343,25 @@ const AppSidebar: React.FC = () => {
             )}
           </div>
         </nav>
-        {/* {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null} */}
+        
+        {(isExpanded || isHovered || isMobileOpen) && (
+          <div className="mt-auto pb-10 flex flex-col gap-6 items-center">
+            <div className="px-4">
+              <img 
+                src={imgPlaneacion} 
+                alt="Planeación" 
+                className="w-full rounded-xl shadow-md border border-gray-100 dark:border-gray-800"
+              />
+            </div>
+            <div className="px-10">
+              <img 
+                src={imgQuantika} 
+                alt="Quantika" 
+                className="w-full opacity-80 hover:opacity-100 transition-opacity"
+              />
+            </div>
+          </div>
+        )}
       </div>
     </aside>
   );
