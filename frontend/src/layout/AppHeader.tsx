@@ -43,7 +43,7 @@ const AppHeader: React.FC = () => {
   return (
     <header className="sticky top-0 flex w-full bg-gradient-to-r from-[#003D7A] to-[#1B7D3F] z-99999 lg:border-b border-white/20">
       <div className="flex flex-col items-center justify-between grow lg:flex-row lg:px-6">
-        <div className="flex items-center justify-between w-full gap-2 px-3 py-3 border-b border-white/20 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4">
+        <div className="flex items-center justify-between w-full gap-2 px-3 py-3 border-b border-white/20 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4 lg:w-1/4">
           <button
             className="items-center justify-center w-10 h-10 text-white border-white/30 rounded-lg z-99999 lg:flex lg:h-11 lg:w-11 lg:border hover:bg-white/10"
             onClick={handleToggle}
@@ -103,13 +103,6 @@ const AppHeader: React.FC = () => {
             </div>
           </div>
 
-          {/* Título Central (Desktop) */}
-          <div className="hidden lg:flex items-center justify-center text-center flex-1">
-            <h1 className="text-white font-bold text-lg tracking-tight">
-              PDM 2024 - 2027 "Ahora es el Tiempo de Tenjo"
-            </h1>
-          </div>
-
           <button
             onClick={toggleApplicationMenu}
             className="flex items-center justify-center w-10 h-10 text-white rounded-lg z-99999 hover:bg-white/10 lg:hidden"
@@ -124,16 +117,24 @@ const AppHeader: React.FC = () => {
               <path
                 fillRule="evenodd"
                 clipRule="evenodd"
-                d="M5.99902 10.4951C6.82745 10.4951 7.49902 11.1667 7.49902 11.9951V12.0051C7.49902 12.8335 6.82745 13.5051 5.99902 13.5051C5.1706 13.5051 4.49902 12.8335 4.49902 12.0051V11.9951C4.49902 11.1667 5.1706 10.4951 5.99902 10.4951ZM17.999 10.4951C18.8275 10.4951 19.499 11.1667 19.499 11.9951V12.0051C19.499 12.8335 18.8275 13.5051 17.999 13.5051C17.1706 13.5051 16.499 12.8335 16.499 12.0051V11.9951C16.499 11.1667 17.1706 10.4951 17.999 10.4951ZM13.499 11.9951C13.499 11.1667 12.8275 10.4951 11.999 10.4951C11.1706 10.4951 10.499 11.1667 10.499 11.9951V12.0051C10.499 12.8335 11.1706 13.5051 11.999 13.5051C12.8275 13.5051 13.499 12.8335 13.499 12.0051V11.9951Z"
+                d="M5.99902 10.4951C6.82745 10.4951 7.49902 11.1667 7.49902 11.9951V12.0051C7.49902 12.8335 6.82745 13.5051 5.99902 13.5051C5.1706 13.5051 4.49902 12.8335 4.49902 12.0051V11.9951C4.49902 11.1667 5.1706 10.4951 5.99902 10.4951ZM17.999 10.4951C18.8275 10.4951 19.499 11.1667 19.499 11.9951V12.0051C19.499 12.8335 18.8275 13.5051 17.999 13.5051C17.1706 13.5051 16.499 12.8335 16.499 12.0051V11.9951C16.499 11.1667 17.1706 10.4951 17.999 10.4951ZM13.499 11.9951C13.499 11.1667 12.8275 10.4951 11.999 10.4951C11.1706 10.4951 10.499 11.1667 10.499 11.9951V12.0051C10.499 12.8335 11.1706 13.5051 11.999 13.5051C12.8275 13.5051 13.499 12.0051V11.9951Z"
                 fill="currentColor"
               />
             </svg>
           </button>
         </div>
+
+        {/* Título Central (Desktop) */}
+        <div className="hidden lg:flex items-center justify-center text-center flex-1 px-4">
+          <h1 className="text-white font-bold text-xl tracking-tight whitespace-nowrap">
+            PDM 2024 - 2027 "Ahora es el Tiempo de Tenjo"
+          </h1>
+        </div>
+
         <div
           className={`${
             isApplicationMenuOpen ? "flex" : "hidden"
-          } items-center justify-between w-full gap-4 px-5 py-4 lg:flex bg-white/10 lg:justify-end lg:px-0 lg:bg-transparent`}
+          } items-center justify-between w-full gap-4 px-5 py-4 lg:flex bg-white/10 lg:justify-end lg:px-0 lg:bg-transparent lg:w-1/4`}
         >
           <div className="flex items-center gap-2 2xsm:gap-3">
             {/* <!-- Dark Mode Toggler --> */}
