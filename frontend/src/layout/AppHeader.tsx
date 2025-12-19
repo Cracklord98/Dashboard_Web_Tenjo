@@ -103,6 +103,16 @@ const AppHeader: React.FC = () => {
             </div>
           </div>
 
+          {/* Título Central (Desktop) */}
+          <div className="hidden lg:flex flex-col items-center justify-center text-center flex-1">
+            <h1 className="text-white font-black text-xl tracking-tight leading-tight">
+              PDM 2024 - 2027
+            </h1>
+            <p className="text-white/90 font-medium text-sm italic">
+              "Ahora es el Tiempo de Tenjo"
+            </p>
+          </div>
+
           <button
             onClick={toggleApplicationMenu}
             className="flex items-center justify-center w-10 h-10 text-white rounded-lg z-99999 hover:bg-white/10 lg:hidden"
