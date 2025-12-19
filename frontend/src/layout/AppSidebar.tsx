@@ -3,20 +3,13 @@ import { Link, useLocation } from "react-router";
 
 // Assume these icons are imported from an icon library
 import {
-  BoxCubeIcon,
   CalenderIcon,
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
-  ListIcon,
   PageIcon,
-  PieChartIcon,
-  PlugInIcon,
-  TableIcon,
-  UserCircleIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
-import SidebarWidget from "./SidebarWidget";
 
 type NavItem = {
   name: string;
@@ -277,31 +270,27 @@ const AppSidebar: React.FC = () => {
           !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
         }`}
       >
-        <Link to="/">
+        <Link to="/" className="flex items-center gap-3">
           {isExpanded || isHovered || isMobileOpen ? (
-            <>
-              <img
-                className="dark:hidden"
-                src="/images/logo/logo.svg"
-                alt="Logo"
-                width={150}
-                height={40}
-              />
-              <img
-                className="hidden dark:block"
-                src="/images/logo/logo-dark.svg"
-                alt="Logo"
-                width={150}
-                height={40}
-              />
-            </>
+            <div className="flex items-center gap-2 px-2">
+              <div className="w-10 h-10 bg-linear-to-br from-[#003D7A] to-[#1B7D3F] rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xl font-black tracking-tighter text-gray-900 dark:text-white leading-none">
+                  TENJO
+                </span>
+                <span className="text-[10px] font-bold text-[#1B7D3F] dark:text-green-400 tracking-[0.2em] uppercase leading-none mt-1">
+                  Dashboard
+                </span>
+              </div>
+            </div>
           ) : (
-            <img
-              src="/images/logo/logo-icon.svg"
-              alt="Logo"
-              width={32}
-              height={32}
-            />
+            <div className="w-10 h-10 bg-linear-to-br from-[#003D7A] to-[#1B7D3F] rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+              <span className="text-white font-black text-xl">T</span>
+            </div>
           )}
         </Link>
       </div>
@@ -310,33 +299,39 @@ const AppSidebar: React.FC = () => {
           <div className="flex flex-col gap-4">
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-5 text-gray-400 ${
+                className={`mb-5 text-[10px] font-extrabold uppercase tracking-[0.2em] flex leading-5 text-gray-400 dark:text-gray-500 ${
                   !isExpanded && !isHovered
                     ? "lg:justify-center"
-                    : "justify-start"
+                    : "justify-start px-4"
                 }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
-                  "Menu"
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-1 h-4 bg-linear-to-b from-[#003D7A] to-[#1B7D3F] rounded-full shadow-sm"></div>
+                    <span>Navegación</span>
+                  </div>
                 ) : (
-                  <HorizontaLDots className="size-6" />
+                  <HorizontaLDots className="size-6 opacity-50" />
                 )}
               </h2>
               {renderMenuItems(navItems, "main")}
             </div>
             {othersItems.length > 0 && (
-              <div className="">
+              <div className="mt-8">
                 <h2
-                  className={`mb-4 text-xs uppercase flex leading-5 text-gray-400 ${
+                  className={`mb-5 text-[10px] font-extrabold uppercase tracking-[0.2em] flex leading-5 text-gray-400 dark:text-gray-500 ${
                     !isExpanded && !isHovered
                       ? "lg:justify-center"
-                      : "justify-start"
+                      : "justify-start px-4"
                   }`}
                 >
                   {isExpanded || isHovered || isMobileOpen ? (
-                    "Otros"
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-1 h-4 bg-gray-300 dark:bg-gray-700 rounded-full shadow-sm"></div>
+                      <span>Otros</span>
+                    </div>
                   ) : (
-                    <HorizontaLDots />
+                    <HorizontaLDots className="opacity-50" />
                   )}
                 </h2>
                 {renderMenuItems(othersItems, "others")}

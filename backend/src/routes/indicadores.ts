@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { IndicadoresService } from '../services/indicadoresService';
+import { IndicadoresService } from '../services/indicadoresService.js';
 
 const router = Router();
 const indicadoresService = new IndicadoresService();

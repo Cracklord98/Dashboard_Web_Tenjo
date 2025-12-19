@@ -2,10 +2,10 @@ import { useEffect } from "react";
 
 const PageMeta = ({
   title,
-  description,
+  description = "Dashboard Tenjo - Plan de Desarrollo Municipal",
 }: {
   title: string;
-  description: string;
+  description?: string;
 }) => {
   useEffect(() => {
     document.title = title;

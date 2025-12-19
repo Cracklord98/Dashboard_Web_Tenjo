@@ -93,11 +93,10 @@ export async function obtenerSeguimientoPorId(id: string): Promise<Seguimiento> 
 
 import type { 
   MetaProducto, 
-  FiltrosMetaProducto, 
-  MetasProductoResponse 
+  FiltrosMetaProducto
 } from '../types/metaProducto';
 
-export async function obtenerMetasProducto(filtros?: FiltrosMetaProducto): Promise<MetasProductoResponse> {
+export async function obtenerMetasProducto(filtros?: FiltrosMetaProducto): Promise<MetaProducto[]> {
   const params = new URLSearchParams();
   
   if (filtros) {
@@ -118,6 +117,30 @@ export async function obtenerMetasProducto(filtros?: FiltrosMetaProducto): Promi
 
 export async function obtenerMetaPorId(id: string): Promise<MetaProducto> {
   return request(`/api/metas-producto/${id}`);
+}
+
+// ===== DATOS FINANCIEROS =====
+
+export interface DatosFinancieros {
+  programa: string;
+  presupuestado: number;
+  ejecutado: number;
+  porcentaje: number;
+}
+
+export interface DatosFinancierosResponse {
+  status: 'success' | 'error';
+  data: DatosFinancieros[];
+  timestamp?: string;
+  count?: number;
+}
+
+export async function obtenerDatosFinancieros(): Promise<DatosFinancierosResponse> {
+  return request('/api/financiero');
+}
+
+export async function obtenerDatosFinancierosPorPrograma(programa: string): Promise<{ data: DatosFinancieros }> {
+  return request(`/api/financiero/${programa}`);
 }
 
 // ===== HEALTH CHECK =====

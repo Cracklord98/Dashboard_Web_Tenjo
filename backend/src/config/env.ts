@@ -7,10 +7,16 @@ export const config = {
   nodeEnv: process.env.NODE_ENV || 'development',
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173',
   
-  // Google Sheets URLs
+  // Google Sheets Configuration
   googleSheets: {
-    financieroUrl: process.env.GOOGLE_SHEET_FINANCIERO_URL || '',
-    metasProductoUrl: process.env.GOOGLE_SHEET_METAS_PRODUCTO_URL || '',
+    // API v4 (STANDBY - Para obtener URLs de hipervínculos en el futuro)
+    apiKey: process.env.GOOGLE_SHEETS_API_KEY || '',
+    spreadsheetId: process.env.GOOGLE_SPREADSHEET_ID || '131I6QiWvzj929LBQo_OgRs1qKC1g9RHuOMOPvcSnCyM',
+    sheetName: process.env.GOOGLE_SHEET_NAME || 'FICHA PRODUCTO 2024-2025',
+    
+    // CSV (ACTIVO - Modo actual)
+    csvUrl: process.env.GOOGLE_SHEET_CSV_URL || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTMfCRuywb0fDRC6h5z8iEoAIJJfRGzFa92MXMzrJDYrrBHV6f6ehTrIqFKrqnNiWJE78ywRwKZ_z0D/pub?output=csv',
+    financieroUrl: process.env.GOOGLE_SHEET_FINANCIERO_URL || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTMfCRuywb0fDRC6h5z8iEoAIJJfRGzFa92MXMzrJDYrrBHV6f6ehTrIqFKrqnNiWJE78ywRwKZ_z0D/pub?gid=815695373&single=true&output=csv',
   },
   
   isDevelopment: process.env.NODE_ENV === 'development',

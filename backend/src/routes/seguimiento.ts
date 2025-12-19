@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { SeguimientoService } from '../services/seguimientoService';
+import { SeguimientoService } from '../services/seguimientoService.js';
 
 const router = Router();
 const seguimientoService = new SeguimientoService();

@@ -2,12 +2,13 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import { config } from './config/env';
-import { errorHandler } from './config/errorHandler';
-import seguimientoRoutes from './routes/seguimiento';
-import indicadoresRoutes from './routes/indicadores';
-import financieroRoutes from './routes/financiero';
-import metasProductoRoutes from './routes/metasProducto';
+import { config } from './config/env.js';
+import { logger } from './config/logger.js';
+import { errorHandler } from './config/errorHandler.js';
+import seguimientoRoutes from './routes/seguimiento.js';
+import indicadoresRoutes from './routes/indicadores.js';
+import financieroRoutes from './routes/financiero.js';
+import metasProductoRoutes from './routes/metasProducto.js';
 
 const app = express();
 
@@ -62,9 +63,6 @@ app.use('/api/metas-producto', metasProductoRoutes);
 
 // Manejo de errores
 app.use(errorHandler);
-
-// Logger
-import { logger } from './config/logger';
 
 // Iniciar servidor
 const PORT = config.port;
