@@ -104,13 +104,10 @@ const AppHeader: React.FC = () => {
           </div>
 
           {/* Título Central (Desktop) */}
-          <div className="hidden lg:flex flex-col items-center justify-center text-center flex-1">
-            <h1 className="text-white font-black text-xl tracking-tight leading-tight">
-              PDM 2024 - 2027
+          <div className="hidden lg:flex items-center justify-center text-center flex-1">
+            <h1 className="text-white font-bold text-lg tracking-tight">
+              PDM 2024 - 2027 "Ahora es el Tiempo de Tenjo"
             </h1>
-            <p className="text-white/90 font-medium text-sm italic">
-              "Ahora es el Tiempo de Tenjo"
-            </p>
           </div>
 
           <button
