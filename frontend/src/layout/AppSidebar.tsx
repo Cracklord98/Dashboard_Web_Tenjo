@@ -345,7 +345,7 @@ const AppSidebar: React.FC = () => {
         </nav>
         
         {(isExpanded || isHovered || isMobileOpen) && (
-          <div className="mt-auto pb-10 flex flex-col gap-6 items-center">
+          <div className="mt-auto pb-6 flex flex-col gap-6 items-center">
             <div className="px-4">
               <img 
                 src={imgPlaneacion} 
@@ -359,6 +359,19 @@ const AppSidebar: React.FC = () => {
                 alt="Quantika" 
                 className="w-full opacity-80 hover:opacity-100 transition-opacity"
               />
+            </div>
+            
+            {/* Footer de la Barra Lateral */}
+            <div className="px-6 pb-4 text-center">
+              <div className="w-full h-px bg-gray-100 dark:bg-gray-800 mb-4"></div>
+              <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium leading-relaxed">
+                Diseñado y desarrollado con <span className="text-red-500 animate-pulse">❤️</span> por <br />
+                <span className="font-bold text-gray-700 dark:text-gray-200">Quantika IA SAS</span>
+              </p>
+              <p className="text-[9px] text-gray-400 dark:text-gray-500 mt-2 uppercase tracking-wider">
+                Secretaría de Planeación y Desarrollo Territorial <br />
+                Tenjo, Cundinamarca © 2025
+              </p>
             </div>
           </div>
         )}
