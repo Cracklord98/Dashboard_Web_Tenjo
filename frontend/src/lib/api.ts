@@ -143,6 +143,14 @@ export async function obtenerDatosFinancierosPorPrograma(programa: string): Prom
   return request(`/api/financiero/${programa}`);
 }
 
+// ===== SECRETARIAS =====
+
+import type { Secretaria } from '../types/secretaria';
+
+export async function obtenerSecretarias(): Promise<Secretaria[]> {
+  return request('/api/secretarias');
+}
+
 // ===== HEALTH CHECK =====
 
 export async function checkHealth(): Promise<{ status: string; timestamp: string }> {

@@ -3,6 +3,7 @@
  */
 
 export interface MetaProducto {
+  [key: string]: any; // Permitir acceso dinámico para campos de años/trimestres
   id: number;
   meta: string;
   ejePrograma: string;

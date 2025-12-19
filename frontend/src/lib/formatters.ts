@@ -65,32 +65,36 @@ export const calculatePercentage = (part: number, total: number): number => {
   return Math.min(Math.max(result, 0), 100);
 };
 
-export const getColorForPercentage = (percentage: number): { text: string; bg: string; gradient: string } => {
+export const getColorForPercentage = (percentage: number): { text: string; bg: string; gradient: string; hex: string } => {
   if (percentage >= 90) {
     return {
       text: 'text-green-600 dark:text-green-400',
       bg: 'bg-green-100 dark:bg-green-900',
-      gradient: 'from-green-500 to-green-600 dark:from-green-600 dark:to-green-700'
+      gradient: 'from-green-500 to-green-600 dark:from-green-600 dark:to-green-700',
+      hex: '#10b981'
     };
   }
   if (percentage >= 70) {
     return {
       text: 'text-yellow-600 dark:text-yellow-400',
       bg: 'bg-yellow-100 dark:bg-yellow-900',
-      gradient: 'from-yellow-500 to-yellow-600 dark:from-yellow-600 dark:to-yellow-700'
+      gradient: 'from-yellow-500 to-yellow-600 dark:from-yellow-600 dark:to-yellow-700',
+      hex: '#f59e0b'
     };
   }
   if (percentage >= 50) {
     return {
       text: 'text-orange-600 dark:text-orange-400',
       bg: 'bg-orange-100 dark:bg-orange-900',
-      gradient: 'from-orange-500 to-orange-600 dark:from-orange-600 dark:to-orange-700'
+      gradient: 'from-orange-500 to-orange-600 dark:from-orange-600 dark:to-orange-700',
+      hex: '#f97316'
     };
   }
   return {
     text: 'text-red-600 dark:text-red-400',
     bg: 'bg-red-100 dark:bg-red-900',
-    gradient: 'from-red-500 to-red-600 dark:from-red-600 dark:to-red-700'
+    gradient: 'from-red-500 to-red-600 dark:from-red-600 dark:to-red-700',
+    hex: '#ef4444'
   };
 };
 

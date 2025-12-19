@@ -23,8 +23,10 @@ const navItems: NavItem[] = [
     icon: <GridIcon />,
     name: "Dashboard",
     subItems: [
+      { name: "Resumen General", path: "/", pro: false },
       { name: "Ejecución Presupuestal", path: "/ejecucion-presupuestal", pro: false },
       { name: "Ejecución Física", path: "/ejecucion-fisica", pro: false },
+      { name: "Secretarías", path: "/secretarias", pro: false },
       { name: "Metas de Producto", path: "/metas-producto", pro: false }
     ],
   },

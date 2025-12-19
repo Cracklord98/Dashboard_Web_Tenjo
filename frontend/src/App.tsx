@@ -22,6 +22,7 @@ import EjecucionPresupuestal from "./pages/Dashboard/EjecucionPresupuestal";
 import EjecucionFisica from "./pages/Dashboard/EjecucionFisica";
 import MetasProductoPage from "./pages/Dashboard/MetasProductoPage";
 import MetaDetallePage from "./pages/Dashboard/MetaDetallePage";
+import SecretariasPage from "./pages/Dashboard/SecretariasPage";
 
 export default function App() {
   return (
@@ -34,6 +35,7 @@ export default function App() {
             <Route index path="/" element={<Home />} />
             <Route path="/ejecucion-presupuestal" element={<EjecucionPresupuestal />} />
             <Route path="/ejecucion-fisica" element={<EjecucionFisica />} />
+            <Route path="/secretarias" element={<SecretariasPage />} />
             <Route path="/metas-producto" element={<MetasProductoPage />} />
             <Route path="/metas-producto/:id" element={<MetaDetallePage />} />
 

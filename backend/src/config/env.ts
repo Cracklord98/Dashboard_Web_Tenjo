@@ -17,6 +17,7 @@ export const config = {
     // CSV (ACTIVO - Modo actual)
     csvUrl: process.env.GOOGLE_SHEET_CSV_URL || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTMfCRuywb0fDRC6h5z8iEoAIJJfRGzFa92MXMzrJDYrrBHV6f6ehTrIqFKrqnNiWJE78ywRwKZ_z0D/pub?output=csv',
     financieroUrl: process.env.GOOGLE_SHEET_FINANCIERO_URL || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTMfCRuywb0fDRC6h5z8iEoAIJJfRGzFa92MXMzrJDYrrBHV6f6ehTrIqFKrqnNiWJE78ywRwKZ_z0D/pub?gid=815695373&single=true&output=csv',
+    secretariasUrl: process.env.GOOGLE_SHEET_SECRETARIAS_URL || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTMfCRuywb0fDRC6h5z8iEoAIJJfRGzFa92MXMzrJDYrrBHV6f6ehTrIqFKrqnNiWJE78ywRwKZ_z0D/pub?gid=2137949871&single=true&output=csv',
   },
   
   isDevelopment: process.env.NODE_ENV === 'development',

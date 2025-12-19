@@ -9,6 +9,7 @@ import seguimientoRoutes from './routes/seguimiento.js';
 import indicadoresRoutes from './routes/indicadores.js';
 import financieroRoutes from './routes/financiero.js';
 import metasProductoRoutes from './routes/metasProducto.js';
+import secretariasRoutes from './routes/secretarias.js';
 
 const app = express();
 
@@ -60,6 +61,7 @@ app.use('/api/seguimiento', seguimientoRoutes);
 app.use('/api/indicadores', indicadoresRoutes);
 app.use('/api/financiero', financieroRoutes);
 app.use('/api/metas-producto', metasProductoRoutes);
+app.use('/api/secretarias', secretariasRoutes);
 
 // Manejo de errores
 app.use(errorHandler);

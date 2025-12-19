@@ -120,15 +120,14 @@ const EjecucionFisica = () => {
     const ejecutadoKey = añoSeleccionado === '2025' ? 'totalEjecutado2025' : 'totalEjecutado2024';
 
     // KPIs generales
-    const totalPlanificadas = metasFiltradas.reduce((sum, m) => sum + parseNumber((m as Record<string, unknown>)[planeadoKey]), 0);
-    const totalEjecutadas = metasFiltradas.reduce((sum, m) => sum + parseNumber((m as Record<string, unknown>)[ejecutadoKey]), 0);
+    const totalPlanificadas = metasFiltradas.reduce((sum, m) => sum + parseNumber(m[planeadoKey]), 0);
+    const totalEjecutadas = metasFiltradas.reduce((sum, m) => sum + parseNumber(m[ejecutadoKey]), 0);
     const porcentajeTotal = calculatePercentage(totalEjecutadas, totalPlanificadas);
 
     // Contar metas por estado
     const metasConEstado = metasFiltradas.map((meta) => {
-      const metaRecord = meta as Record<string, unknown>;
-      const planeado = parseNumber(metaRecord[planeadoKey]);
-      const ejecutado = parseNumber(metaRecord[ejecutadoKey]);
+      const planeado = parseNumber(meta[planeadoKey]);
+      const ejecutado = parseNumber(meta[ejecutadoKey]);
       const porcentaje = calculatePercentage(ejecutado, planeado);
       
       let estado = 'Pendiente';
@@ -156,14 +155,13 @@ const EjecucionFisica = () => {
     if (nivelTabla === 'eje') {
       const ejesMap = new Map<string, { planeado: number; ejecutado: number; metas: number }>();
       metasFiltradas.forEach((meta) => {
-        const metaRecord = meta as Record<string, unknown>;
         const eje = meta.ejePrograma || 'Sin Eje';
         if (!ejesMap.has(eje)) {
           ejesMap.set(eje, { planeado: 0, ejecutado: 0, metas: 0 });
         }
         const current = ejesMap.get(eje)!;
-        current.planeado += parseNumber(metaRecord[planeadoKey]);
-        current.ejecutado += parseNumber(metaRecord[ejecutadoKey]);
+        current.planeado += parseNumber(meta[planeadoKey]);
+        current.ejecutado += parseNumber(meta[ejecutadoKey]);
         current.metas += 1;
       });
       datosTabla = Array.from(ejesMap.entries()).map(([nombre, data]) => ({
@@ -176,14 +174,13 @@ const EjecucionFisica = () => {
     } else if (nivelTabla === 'programa') {
       const programasMap = new Map<string, { planeado: number; ejecutado: number; metas: number }>();
       metasFiltradas.forEach((meta) => {
-        const metaRecord = meta as Record<string, unknown>;
         const programa = meta.programa || 'Sin Programa';
         if (!programasMap.has(programa)) {
           programasMap.set(programa, { planeado: 0, ejecutado: 0, metas: 0 });
         }
         const current = programasMap.get(programa)!;
-        current.planeado += parseNumber(metaRecord[planeadoKey]);
-        current.ejecutado += parseNumber(metaRecord[ejecutadoKey]);
+        current.planeado += parseNumber(meta[planeadoKey]);
+        current.ejecutado += parseNumber(meta[ejecutadoKey]);
         current.metas += 1;
       });
       datosTabla = Array.from(programasMap.entries()).map(([nombre, data]) => ({
@@ -196,14 +193,13 @@ const EjecucionFisica = () => {
     } else if (nivelTabla === 'subprograma') {
       const subprogramasMap = new Map<string, { planeado: number; ejecutado: number; metas: number }>();
       metasFiltradas.forEach((meta) => {
-        const metaRecord = meta as Record<string, unknown>;
-        const subprograma = meta.subPrograma || 'Sin Subprograma';
+        const subprograma = meta.subprograma || 'Sin Subprograma';
         if (!subprogramasMap.has(subprograma)) {
           subprogramasMap.set(subprograma, { planeado: 0, ejecutado: 0, metas: 0 });
         }
         const current = subprogramasMap.get(subprograma)!;
-        current.planeado += parseNumber(metaRecord[planeadoKey]);
-        current.ejecutado += parseNumber(metaRecord[ejecutadoKey]);
+        current.planeado += parseNumber(meta[planeadoKey]);
+        current.ejecutado += parseNumber(meta[ejecutadoKey]);
         current.metas += 1;
       });
       datosTabla = Array.from(subprogramasMap.entries()).map(([nombre, data]) => ({
@@ -216,19 +212,18 @@ const EjecucionFisica = () => {
     } else {
       // Nivel meta - mostrar cada meta individualmente
       datosTabla = metasFiltradas.map((meta) => {
-        const metaRecord = meta as Record<string, unknown>;
         // Construir nombre más descriptivo
-        let nombre = meta.metaProducto || meta.metaResultado || meta.nombreProyecto || '';
+        let nombre = meta.meta || meta.metaResultado || meta.proyecto || '';
         if (!nombre && meta.programa) {
-          nombre = `${meta.programa} - Meta ${meta.codigo || ''}`;
+          nombre = `${meta.programa} - Meta ${meta.codigoMeta || ''}`;
         }
         if (!nombre) nombre = 'Meta sin descripción';
         
         return {
           nombre: nombre.trim(),
-          planificadas: parseNumber(metaRecord[planeadoKey]),
-          ejecutadas: parseNumber(metaRecord[ejecutadoKey]),
-          porcentaje: calculatePercentage(parseNumber(metaRecord[ejecutadoKey]), parseNumber(metaRecord[planeadoKey])),
+          planificadas: parseNumber(meta[planeadoKey]),
+          ejecutadas: parseNumber(meta[ejecutadoKey]),
+          porcentaje: calculatePercentage(parseNumber(meta[ejecutadoKey]), parseNumber(meta[planeadoKey])),
           metas: 1
         };
       });
