@@ -19,6 +19,8 @@ const MetasProductoPage = () => {
   const [programaSeleccionado, setProgramaSeleccionado] = useState<string>('todos');
   const [estadoSeleccionado, setEstadoSeleccionado] = useState<string>('todos');
   const [evaluacionSeleccionada, setEvaluacionSeleccionada] = useState<string>('todos');
+  const [codigoMetaSeleccionado, setCodigoMetaSeleccionado] = useState<string>('');
+  const [bpinSeleccionado, setBpinSeleccionado] = useState<string>('');
   const [busqueda, setBusqueda] = useState('');
 
   const cargarMetas = async () => {
@@ -70,9 +72,21 @@ const MetasProductoPage = () => {
       filtradas = filtradas.filter(m => m.estadoEvaluacion === evaluacionSeleccionada);
     }
 
+    if (codigoMetaSeleccionado) {
+      filtradas = filtradas.filter(m => 
+        m.codigoMeta?.toString().toLowerCase().includes(codigoMetaSeleccionado.toLowerCase())
+      );
+    }
+
+    if (bpinSeleccionado) {
+      filtradas = filtradas.filter(m => 
+        m.bpin?.toString().toLowerCase().includes(bpinSeleccionado.toLowerCase())
+      );
+    }
+
     console.log(`📊 Metas filtradas: ${filtradas.length} de ${metas.length}`);
     return filtradas;
-  }, [metas, busqueda, ejeSeleccionado, programaSeleccionado, estadoSeleccionado, evaluacionSeleccionada]);
+  }, [metas, busqueda, ejeSeleccionado, programaSeleccionado, estadoSeleccionado, evaluacionSeleccionada, codigoMetaSeleccionado, bpinSeleccionado]);
 
   // Obtener opciones únicas para filtros
   const ejesDisponibles = useMemo(() => {
@@ -296,8 +310,8 @@ const MetasProductoPage = () => {
             </div>
           </div>
 
-          <div className="flex gap-4 mt-4">
-            <div className="flex-1">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 🎭 Estado
               </label>
@@ -313,24 +327,52 @@ const MetasProductoPage = () => {
               </select>
             </div>
 
-            {(ejeSeleccionado !== 'todos' || programaSeleccionado !== 'todos' || estadoSeleccionado !== 'todos' || evaluacionSeleccionada !== 'todos' || busqueda) && (
-              <div className="flex items-end">
-                <button
-                  onClick={() => {
-                    setEjeSeleccionado('todos');
-                    setProgramaSeleccionado('todos');
-                    setEstadoSeleccionado('todos');
-                    setEvaluacionSeleccionada('todos');
-                    setBusqueda('');
-                  }}
-                  className="px-4 py-2.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors flex items-center gap-2"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                  Limpiar Filtros
-                </button>
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                🔢 Cod Meta
+              </label>
+              <input
+                type="text"
+                placeholder="Escribir código..."
+                value={codigoMetaSeleccionado}
+                onChange={(e) => setCodigoMetaSeleccionado(e.target.value)}
+                className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                🆔 BPIN
+              </label>
+              <input
+                type="text"
+                placeholder="Escribir BPIN..."
+                value={bpinSeleccionado}
+                onChange={(e) => setBpinSeleccionado(e.target.value)}
+                className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end mt-4">
+            {(ejeSeleccionado !== 'todos' || programaSeleccionado !== 'todos' || estadoSeleccionado !== 'todos' || evaluacionSeleccionada !== 'todos' || codigoMetaSeleccionado || bpinSeleccionado || busqueda) && (
+              <button
+                onClick={() => {
+                  setEjeSeleccionado('todos');
+                  setProgramaSeleccionado('todos');
+                  setEstadoSeleccionado('todos');
+                  setEvaluacionSeleccionada('todos');
+                  setCodigoMetaSeleccionado('');
+                  setBpinSeleccionado('');
+                  setBusqueda('');
+                }}
+                className="px-4 py-2.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors flex items-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Limpiar Filtros
+              </button>
             )}
           </div>
         </div>
@@ -371,6 +413,18 @@ const MetasProductoPage = () => {
                     <div className={`p-4 ${porcentaje >= 90 ? 'bg-green-50 dark:bg-green-900/20' : porcentaje >= 50 ? 'bg-yellow-50 dark:bg-yellow-900/20' : 'bg-red-50 dark:bg-red-900/20'}`}>
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
+                          <div className="flex gap-2 mb-1">
+                            {meta.codigoMeta && (
+                              <span className="px-1.5 py-0.5 bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 text-[10px] font-bold rounded">
+                                {meta.codigoMeta}
+                              </span>
+                            )}
+                            {meta.bpin && (
+                              <span className="px-1.5 py-0.5 bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300 text-[10px] font-bold rounded">
+                                BPIN: {meta.bpin}
+                              </span>
+                            )}
+                          </div>
                           <h3 className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-2 min-h-10" title={meta.meta}>
                             {meta.meta || 'Sin descripción'}
                           </h3>

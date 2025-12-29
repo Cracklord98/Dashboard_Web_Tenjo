@@ -67,6 +67,7 @@ export interface MetaProducto {
   
   // Campos adicionales
   codigoMeta?: string;
+  bpin?: string;
   urlSoporte?: string;
   observaciones?: string;
 }

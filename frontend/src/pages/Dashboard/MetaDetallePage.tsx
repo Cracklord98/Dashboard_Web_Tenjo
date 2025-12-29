@@ -135,9 +135,14 @@ const MetaDetallePage = () => {
             <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
               <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">META DE PRODUCTO</p>
               <p className="text-base font-bold text-gray-900 dark:text-white">{meta.meta}</p>
-              {meta.codigoMeta && (
-                <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">Código: {meta.codigoMeta}</p>
-              )}
+              <div className="flex gap-4 mt-1">
+                {meta.codigoMeta && (
+                  <p className="text-xs text-blue-600 dark:text-blue-400">Código: {meta.codigoMeta}</p>
+                )}
+                {meta.bpin && (
+                  <p className="text-xs text-indigo-600 dark:text-indigo-400">BPIN: {meta.bpin}</p>
+                )}
+              </div>
             </div>
 
             {/* Jerarquía PDM */}

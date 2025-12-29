@@ -65,6 +65,7 @@ interface MetaProducto {
   indicador?: string;
   unidadMedida?: string;
   codigoMeta?: string;
+  bpin?: string;
   observaciones?: string;
 }
 
@@ -170,7 +171,8 @@ export class MetasProductoService {
       lineaBase: row['L.B'] || '',
       indicador: row['INDICADOR'] || '',
       unidadMedida: row['UNIDAD DE MEDIDA'] || '',
-      codigoMeta: row['COD META PRODUCTO'] || '',
+      codigoMeta: row['COD META PRODUCTO'] || row['Cod Meta de producto'] || '',
+      bpin: row['BPIN'] || '',
       observaciones: row['OBSERVACIONES'] || '',
     };
   }
