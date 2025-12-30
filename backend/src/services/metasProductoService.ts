@@ -172,7 +172,7 @@ export class MetasProductoService {
       indicador: row['INDICADOR'] || '',
       unidadMedida: row['UNIDAD DE MEDIDA'] || '',
       codigoMeta: row['COD META PRODUCTO'] || row['Cod Meta de producto'] || '',
-      bpin: row['BPIN'] || '',
+      bpin: row['BPIN'] || row['Bpin'] || row['bpin'] || row[' BPIN'] || row['BPIN '] || '',
       observaciones: row['OBSERVACIONES'] || '',
     };
   }
@@ -255,6 +255,22 @@ export class MetasProductoService {
       logger.info(`📦 Filas obtenidas: ${rows.length}`);
       if (rows.length > 0) {
         logger.info(`📋 Columnas disponibles: ${Object.keys(rows[0]).slice(0, 10).join(', ')}...`);
+        logger.info(`📋 Total columnas: ${Object.keys(rows[0]).length}`);
+        
+        // Verificar columnas críticas
+        const columnasCriticas = ['BPIN', 'COD META PRODUCTO', 'Cod Meta de producto'];
+        columnasCriticas.forEach(col => {
+          if (Object.keys(rows[0]).includes(col)) {
+            logger.info(`✅ Columna "${col}" encontrada`);
+          } else {
+            logger.warn(`⚠️ Columna "${col}" NO encontrada`);
+          }
+        });
+        
+        // Mostrar valor de BPIN en primera fila como ejemplo
+        if (rows[0]['BPIN'] !== undefined) {
+          logger.info(`📍 Ejemplo BPIN primera fila: "${rows[0]['BPIN']}"`);
+        }
       }
       
       const metas = rows

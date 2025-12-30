@@ -17,6 +17,7 @@ const MetasProductoPage = () => {
   const [añoSeleccionado, setAñoSeleccionado] = useState<'2024' | '2025'>('2025');
   const [ejeSeleccionado, setEjeSeleccionado] = useState<string>('todos');
   const [programaSeleccionado, setProgramaSeleccionado] = useState<string>('todos');
+  const [secretariaSeleccionada, setSecretariaSeleccionada] = useState<string>('todos');
   const [estadoSeleccionado, setEstadoSeleccionado] = useState<string>('todos');
   const [evaluacionSeleccionada, setEvaluacionSeleccionada] = useState<string>('todos');
   const [codigoMetaSeleccionado, setCodigoMetaSeleccionado] = useState<string>('');
@@ -64,6 +65,10 @@ const MetasProductoPage = () => {
       filtradas = filtradas.filter(m => m.programa === programaSeleccionado);
     }
 
+    if (secretariaSeleccionada !== 'todos') {
+      filtradas = filtradas.filter(m => m.responsable === secretariaSeleccionada);
+    }
+
     if (estadoSeleccionado !== 'todos') {
       filtradas = filtradas.filter(m => m.estado === estadoSeleccionado);
     }
@@ -86,7 +91,7 @@ const MetasProductoPage = () => {
 
     console.log(`📊 Metas filtradas: ${filtradas.length} de ${metas.length}`);
     return filtradas;
-  }, [metas, busqueda, ejeSeleccionado, programaSeleccionado, estadoSeleccionado, evaluacionSeleccionada, codigoMetaSeleccionado, bpinSeleccionado]);
+  }, [metas, busqueda, ejeSeleccionado, programaSeleccionado, secretariaSeleccionada, estadoSeleccionado, evaluacionSeleccionada, codigoMetaSeleccionado, bpinSeleccionado]);
 
   // Obtener opciones únicas para filtros
   const ejesDisponibles = useMemo(() => {
@@ -102,6 +107,11 @@ const MetasProductoPage = () => {
     const programas = new Set(metasParaProgramas.map(m => m.programa).filter(Boolean));
     return Array.from(programas).sort();
   }, [metas, ejeSeleccionado]);
+
+  const secretariasDisponibles = useMemo(() => {
+    const secretarias = new Set(metas.map(m => m.responsable).filter(Boolean));
+    return Array.from(secretarias).sort();
+  }, [metas]);
 
   const estadosDisponibles = useMemo(() => {
     const estados = new Set(metas.map(m => m.estado).filter(Boolean));
@@ -310,7 +320,23 @@ const MetasProductoPage = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                🏛️ Secretaría
+              </label>
+              <select
+                value={secretariaSeleccionada}
+                onChange={(e) => setSecretariaSeleccionada(e.target.value)}
+                className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="todos">Todas las secretarías</option>
+                {secretariasDisponibles.map(sec => (
+                  <option key={sec} value={sec}>{sec}</option>
+                ))}
+              </select>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 🎭 Estado
@@ -355,11 +381,12 @@ const MetasProductoPage = () => {
           </div>
 
           <div className="flex justify-end mt-4">
-            {(ejeSeleccionado !== 'todos' || programaSeleccionado !== 'todos' || estadoSeleccionado !== 'todos' || evaluacionSeleccionada !== 'todos' || codigoMetaSeleccionado || bpinSeleccionado || busqueda) && (
+            {(ejeSeleccionado !== 'todos' || programaSeleccionado !== 'todos' || secretariaSeleccionada !== 'todos' || estadoSeleccionado !== 'todos' || evaluacionSeleccionada !== 'todos' || codigoMetaSeleccionado || bpinSeleccionado || busqueda) && (
               <button
                 onClick={() => {
                   setEjeSeleccionado('todos');
                   setProgramaSeleccionado('todos');
+                  setSecretariaSeleccionada('todos');
                   setEstadoSeleccionado('todos');
                   setEvaluacionSeleccionada('todos');
                   setCodigoMetaSeleccionado('');
@@ -416,7 +443,7 @@ const MetasProductoPage = () => {
                           <div className="flex gap-2 mb-1">
                             {meta.codigoMeta && (
                               <span className="px-1.5 py-0.5 bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 text-[10px] font-bold rounded">
-                                {meta.codigoMeta}
+                                Cód Meta: {meta.codigoMeta}
                               </span>
                             )}
                             {meta.bpin && (
