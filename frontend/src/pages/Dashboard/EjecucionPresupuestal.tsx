@@ -8,11 +8,47 @@ import { obtenerMetasProducto } from '../../lib/api';
 import type { MetaProducto } from '../../types/metaProducto';
 import { formatCurrency, formatPercent, parseNumber, calculatePercentage, formatCompactNumber } from '../../lib/formatters';
 
+interface DatosPrograma {
+  nombre: string;
+  apropiacionInicial: number;
+  apropiacionDefinitiva: number;
+  compromisos: number;
+  pagos: number;
+  metas: number;
+  porcentajeEjecucion?: number;
+  porcentajePagos?: number;
+}
+
+interface DatosEje {
+  nombre: string;
+  apropiacionInicial: number;
+  apropiacionDefinitiva: number;
+  compromisos: number;
+  metas: number;
+  porcentaje?: number;
+}
+
+interface TooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    name: string;
+    value: number;
+    color: string;
+    payload: {
+      nombre?: string;
+      anio?: string;
+      metas?: number;
+    };
+  }>;
+}
+
 const EjecucionPresupuestal = () => {
   const [metas, setMetas] = useState<MetaProducto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [añoSeleccionado, setAñoSeleccionado] = useState<'2024' | '2025'>('2025');
+  const [ultimaActualizacion, setUltimaActualizacion] = useState<Date | null>(null);
+  const [mostrarNotificacion, setMostrarNotificacion] = useState(false);
   
   // Filtros jerárquicos
   const [ejeSeleccionado, setEjeSeleccionado] = useState<string>('todos');
@@ -25,9 +61,13 @@ const EjecucionPresupuestal = () => {
   const cargarDatos = async () => {
     try {
       setLoading(true);
+      setError(null);
       const metas = await obtenerMetasProducto();
       console.log('✅ Metas cargadas:', metas.length);
       setMetas(metas || []);
+      setUltimaActualizacion(new Date());
+      setMostrarNotificacion(true);
+      setTimeout(() => setMostrarNotificacion(false), 3000);
       setError(null);
     } catch (err) {
       setError('Error al cargar los datos financieros');
@@ -73,33 +113,67 @@ const EjecucionPresupuestal = () => {
     if (!metasFiltradas.length) return null;
 
     // KPIs generales del año seleccionado
-    const apropiacionKey = añoSeleccionado === '2025' ? 'apropiacionInicial2025' : 'apropiacion2024';
+    const apropiacionInicialKey = añoSeleccionado === '2025' ? 'apropiacionInicial2025' : 'apropiacion2024';
+    const apropiacionDefinitivaKey = añoSeleccionado === '2025' ? 'apropiacionDefinitiva2025' : 'apropiacion2024';
     const compromisosKey = añoSeleccionado === '2025' ? 'compromisos2025' : 'compromisos2024';
     const pagosKey = añoSeleccionado === '2025' ? 'pagos2025' : 'pagos2024';
 
-    const totalApropiacion = metasFiltradas.reduce((sum, m: any) => sum + parseNumber(m[apropiacionKey]), 0);
-    const totalCompromisos = metasFiltradas.reduce((sum, m: any) => sum + parseNumber(m[compromisosKey]), 0);
-    const totalPagos = metasFiltradas.reduce((sum, m: any) => sum + parseNumber(m[pagosKey]), 0);
-    const porcentajeEjecucion = calculatePercentage(totalCompromisos, totalApropiacion);
+    // Debug: Verificar valores de las primeras metas
+    console.log('=== DEBUG DATOS FINANCIEROS ===');
+    console.log('Año seleccionado:', añoSeleccionado);
+    console.log('Metas filtradas:', metasFiltradas.length);
+    if (metasFiltradas.length > 0) {
+      const primerasMetas = metasFiltradas.slice(0, 3);
+      primerasMetas.forEach((m: MetaProducto, i: number) => {
+        console.log(`Meta ${i + 1}:`, {
+          apropiacionInicial: m[apropiacionInicialKey],
+          apropiacionDefinitiva: m[apropiacionDefinitivaKey],
+          compromisos: m[compromisosKey],
+          pagos: m[pagosKey],
+          parseInicial: parseNumber(m[apropiacionInicialKey]),
+          parseDefinitiva: parseNumber(m[apropiacionDefinitivaKey]),
+          parseCompromisos: parseNumber(m[compromisosKey]),
+          parsePagos: parseNumber(m[pagosKey]),
+        });
+      });
+    }
+
+    const totalApropiacionInicial = metasFiltradas.reduce((sum, m: MetaProducto) => sum + parseNumber(m[apropiacionInicialKey]), 0);
+    const totalApropiacionDefinitiva = metasFiltradas.reduce((sum, m: MetaProducto) => sum + parseNumber(m[apropiacionDefinitivaKey]), 0);
+    const totalCompromisos = metasFiltradas.reduce((sum, m: MetaProducto) => sum + parseNumber(m[compromisosKey]), 0);
+    const totalPagos = metasFiltradas.reduce((sum, m: MetaProducto) => sum + parseNumber(m[pagosKey]), 0);
+    const porcentajeEjecucion = calculatePercentage(totalCompromisos, totalApropiacionDefinitiva);
+
+    console.log('TOTALES CALCULADOS:', {
+      totalApropiacionInicial,
+      totalApropiacionDefinitiva,
+      totalCompromisos,
+      totalPagos,
+      porcentajeEjecucion
+    });
+    console.log('==============================');
 
     // Datos por programa
-    const datosPorPrograma = metasFiltradas.reduce((acc: any[], meta: any) => {
+    const datosPorPrograma = metasFiltradas.reduce((acc: DatosPrograma[], meta: MetaProducto) => {
       const programa = meta.programa || 'Sin programa';
       const existe = acc.find(p => p.nombre === programa);
 
-      const apropiacion = parseNumber(meta[apropiacionKey]);
+      const apropiacionInicial = parseNumber(meta[apropiacionInicialKey]);
+      const apropiacionDefinitiva = parseNumber(meta[apropiacionDefinitivaKey]);
       const compromisos = parseNumber(meta[compromisosKey]);
       const pagos = parseNumber(meta[pagosKey]);
 
       if (existe) {
-        existe.apropiacion += apropiacion;
+        existe.apropiacionInicial += apropiacionInicial;
+        existe.apropiacionDefinitiva += apropiacionDefinitiva;
         existe.compromisos += compromisos;
         existe.pagos += pagos;
         existe.metas += 1;
       } else {
         acc.push({
           nombre: programa,
-          apropiacion,
+          apropiacionInicial,
+          apropiacionDefinitiva,
           compromisos,
           pagos,
           metas: 1,
@@ -111,43 +185,46 @@ const EjecucionPresupuestal = () => {
 
     // Calcular porcentajes
     datosPorPrograma.forEach(p => {
-      p.porcentajeEjecucion = calculatePercentage(p.compromisos, p.apropiacion);
+      p.porcentajeEjecucion = calculatePercentage(p.compromisos, p.apropiacionDefinitiva);
       p.porcentajePagos = calculatePercentage(p.pagos, p.compromisos);
     });
 
-    // Ordenar por apropiación
-    datosPorPrograma.sort((a, b) => b.apropiacion - a.apropiacion);
+    // Ordenar por apropiación definitiva
+    datosPorPrograma.sort((a, b) => b.apropiacionDefinitiva - a.apropiacionDefinitiva);
 
     // Datos por eje
-    const datosPorEje = metasFiltradas.reduce((acc: any[], meta: any) => {
+    const datosPorEje = metasFiltradas.reduce((acc: DatosEje[], meta: MetaProducto) => {
       const eje = meta.ejePrograma || 'Sin eje';
       const existe = acc.find(e => e.nombre === eje);
 
-      const apropiacion = parseNumber(meta[apropiacionKey]);
+      const apropiacionInicial = parseNumber(meta[apropiacionInicialKey]);
+      const apropiacionDefinitiva = parseNumber(meta[apropiacionDefinitivaKey]);
       const compromisos = parseNumber(meta[compromisosKey]);
 
       if (existe) {
-        existe.apropiacion += apropiacion;
+        existe.apropiacionInicial += apropiacionInicial;
+        existe.apropiacionDefinitiva += apropiacionDefinitiva;
         existe.compromisos += compromisos;
         existe.metas += 1;
       } else {
-        acc.push({ nombre: eje, apropiacion, compromisos, metas: 1 });
+        acc.push({ nombre: eje, apropiacionInicial, apropiacionDefinitiva, compromisos, metas: 1 });
       }
 
       return acc;
     }, []);
 
     datosPorEje.forEach(e => {
-      e.porcentaje = calculatePercentage(e.compromisos, e.apropiacion);
+      e.porcentaje = calculatePercentage(e.compromisos, e.apropiacionDefinitiva);
     });
 
     return {
       kpis: {
-        totalApropiacion,
+        totalApropiacionInicial,
+        totalApropiacionDefinitiva,
         totalCompromisos,
         totalPagos,
         porcentajeEjecucion,
-        saldoDisponible: totalApropiacion - totalCompromisos,
+        saldoDisponible: totalApropiacionDefinitiva - totalCompromisos,
         totalMetas: metasFiltradas.length,
       },
       porPrograma: datosPorPrograma,
@@ -159,25 +236,25 @@ const EjecucionPresupuestal = () => {
   const comparacionAnual = useMemo(() => {
     if (!metasFiltradas.length) return [];
 
-    const datos2024 = metasFiltradas.reduce((acc: any, m: any) => ({
+    const datos2024 = metasFiltradas.reduce((acc: { apropiacion: number; compromisos: number }, m: MetaProducto) => ({
       apropiacion: acc.apropiacion + parseNumber(m.apropiacion2024),
       compromisos: acc.compromisos + parseNumber(m.compromisos2024),
     }), { apropiacion: 0, compromisos: 0 });
 
-    const datos2025 = metasFiltradas.reduce((acc: any, m: any) => ({
-      apropiacion: acc.apropiacion + parseNumber(m.apropiacionInicial2025),
+    const datos2025 = metasFiltradas.reduce((acc: { apropiacion: number; compromisos: number }, m: MetaProducto) => ({
+      apropiacion: acc.apropiacion + parseNumber(m.apropiacionDefinitiva2025),
       compromisos: acc.compromisos + parseNumber(m.compromisos2025),
     }), { apropiacion: 0, compromisos: 0 });
 
     return [
       {
-        año: '2024',
+        anio: '2024',
         apropiacion: datos2024.apropiacion,
         compromisos: datos2024.compromisos,
         porcentaje: calculatePercentage(datos2024.compromisos, datos2024.apropiacion),
       },
       {
-        año: '2025',
+        anio: '2025',
         apropiacion: datos2025.apropiacion,
         compromisos: datos2025.compromisos,
         porcentaje: calculatePercentage(datos2025.compromisos, datos2025.apropiacion),
@@ -188,14 +265,14 @@ const EjecucionPresupuestal = () => {
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
 
   // Tooltip personalizado mejorado
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload }: TooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700">
           <p className="font-semibold text-gray-900 dark:text-white mb-2">
-            {payload[0].payload.nombre || payload[0].payload.año}
+            {payload[0].payload.nombre || payload[0].payload.anio}
           </p>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index: number) => (
             <div key={index} className="flex items-center justify-between gap-4 text-sm">
               <span className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }}></span>
@@ -234,6 +311,21 @@ const EjecucionPresupuestal = () => {
       />
       
       <div className="space-y-6">
+        {/* Notificación de actualización */}
+        {mostrarNotificacion && (
+          <div className="fixed top-20 right-6 z-50 animate-slide-in-right">
+            <div className="bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <p className="font-semibold">Datos actualizados</p>
+                <p className="text-sm opacity-90">{metas.length} metas cargadas</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="flex flex-col gap-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -243,6 +335,11 @@ const EjecucionPresupuestal = () => {
               </h1>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 {kpis.totalMetas} metas de producto • {metasFiltradas.length} filtradas
+                {ultimaActualizacion && (
+                  <span className="ml-2 text-xs">
+                    • Actualizado: {ultimaActualizacion.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                  </span>
+                )}
               </p>
             </div>
 
@@ -331,7 +428,7 @@ const EjecucionPresupuestal = () => {
         </div>
 
         {/* KPIs Principales */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-6">
           <div className="bg-linear-to-br from-indigo-500 to-indigo-600 rounded-xl shadow-lg p-6 text-white">
             <div className="flex items-center justify-between mb-3">
               <p className="text-sm font-medium opacity-90">Metas de Producto</p>
@@ -343,20 +440,31 @@ const EjecucionPresupuestal = () => {
             <p className="text-xs opacity-75 mt-2">total filtradas</p>
           </div>
 
+          <div className="bg-linear-to-br from-cyan-500 to-cyan-600 rounded-xl shadow-lg p-6 text-white">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-medium opacity-90">Apropiación Inicial {añoSeleccionado}</p>
+              <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <p className="text-3xl font-bold">{formatCompactNumber(kpis.totalApropiacionInicial)}</p>
+            <p className="text-xs opacity-75 mt-2">{formatCurrency(kpis.totalApropiacionInicial)}</p>
+          </div>
+
           <div className="bg-linear-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-medium opacity-90">Apropiación Total (COP)</p>
+              <p className="text-sm font-medium opacity-90">Apropiación Definitiva {añoSeleccionado}</p>
               <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <p className="text-3xl font-bold">{formatCompactNumber(kpis.totalApropiacion)}</p>
-            <p className="text-xs opacity-75 mt-2">{formatCurrency(kpis.totalApropiacion)}</p>
+            <p className="text-3xl font-bold">{formatCompactNumber(kpis.totalApropiacionDefinitiva)}</p>
+            <p className="text-xs opacity-75 mt-2">{formatCurrency(kpis.totalApropiacionDefinitiva)}</p>
           </div>
 
           <div className="bg-linear-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-medium opacity-90">Compromisos (COP)</p>
+              <p className="text-sm font-medium opacity-90">Compromisos {añoSeleccionado}</p>
               <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -367,7 +475,7 @@ const EjecucionPresupuestal = () => {
 
           <div className="bg-linear-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-medium opacity-90">Pagos (COP)</p>
+              <p className="text-sm font-medium opacity-90">Pagos {añoSeleccionado}</p>
               <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
@@ -378,19 +486,19 @@ const EjecucionPresupuestal = () => {
 
           <div className="bg-linear-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-medium opacity-90">% Ejecución</p>
+              <p className="text-sm font-medium opacity-90">% Ejecución Presupuestal {añoSeleccionado}</p>
               <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
               </svg>
             </div>
             <p className="text-3xl font-bold">{formatPercent(kpis.porcentajeEjecucion, 1)}</p>
-            <p className="text-xs opacity-75 mt-2">Compromisos / Apropiación</p>
+            <p className="text-xs opacity-75 mt-2">Compromisos / Apropiación Definitiva</p>
           </div>
 
           <div className="bg-linear-to-br from-gray-600 to-gray-700 rounded-xl shadow-lg p-6 text-white">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-medium opacity-90">Saldo Disponible (COP)</p>
+              <p className="text-sm font-medium opacity-90">Saldo Disponible {añoSeleccionado}</p>
               <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
               </svg>
@@ -405,7 +513,7 @@ const EjecucionPresupuestal = () => {
           <ResponsiveContainer width="100%" height={350}>
             <BarChart data={comparacionAnual}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
-              <XAxis dataKey="año" className="text-sm" />
+              <XAxis dataKey="anio" className="text-sm" />
               <YAxis tickFormatter={(value) => formatCompactNumber(value)} />
               <Tooltip content={<CustomTooltip />} />
               <Legend />
@@ -420,13 +528,14 @@ const EjecucionPresupuestal = () => {
           {/* Top 10 Programas */}
           <ComponentCard title="Top 10 Programas PDT por Presupuesto (COP)">
             <ResponsiveContainer width="100%" height={400}>
-              <BarChart data={top10Programas} layout="vertical" margin={{ left: 150 }}>
+              <BarChart data={top10Programas} layout="vertical" margin={{ left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
                 <XAxis type="number" tickFormatter={(value) => formatCompactNumber(value)} />
-                <YAxis dataKey="nombre" type="category" className="text-xs" width={140} />
-                <Tooltip content={<CustomTooltip />} />
+                <YAxis dataKey="nombre" type="category" hide />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} wrapperStyle={{ zIndex: 1000 }} />
                 <Legend />
-                <Bar dataKey="apropiacion" fill="#3b82f6" name="Apropiación" />
+                <Bar dataKey="apropiacionInicial" fill="#06b6d4" name="Apropiación Inicial" />
+                <Bar dataKey="apropiacionDefinitiva" fill="#3b82f6" name="Apropiación Definitiva" />
                 <Bar dataKey="compromisos" fill="#10b981" name="Compromisos" />
               </BarChart>
             </ResponsiveContainer>
@@ -449,13 +558,13 @@ const EjecucionPresupuestal = () => {
                   }}
                   outerRadius={120}
                   fill="#8884d8"
-                  dataKey="apropiacion"
+                  dataKey="apropiacionDefinitiva"
                 >
                   {porEje.map((_entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip content={<CustomTooltip />} wrapperStyle={{ zIndex: 1000 }} />
               </PieChart>
             </ResponsiveContainer>
           </ComponentCard>
@@ -474,7 +583,10 @@ const EjecucionPresupuestal = () => {
                     Metas Producto
                   </th>
                   <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Apropiación
+                    Apropiación Inicial
+                  </th>
+                  <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Apropiación Definitiva
                   </th>
                   <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Compromisos
@@ -492,7 +604,7 @@ const EjecucionPresupuestal = () => {
               </thead>
               <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {porPrograma.map((programa, index) => (
-                  <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
+                  <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                     <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white max-w-xs wrap-break-word" title={programa.nombre}>
                       {programa.nombre}
                     </td>
@@ -501,8 +613,11 @@ const EjecucionPresupuestal = () => {
                         {programa.metas}
                       </span>
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300 text-right">
+                      {formatCurrency(programa.apropiacionInicial)}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300 text-right font-medium">
-                      {formatCurrency(programa.apropiacion)}
+                      {formatCurrency(programa.apropiacionDefinitiva)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300 text-right">
                       {formatCurrency(programa.compromisos)}
@@ -521,7 +636,7 @@ const EjecucionPresupuestal = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-right">
-                      {formatCurrency(programa.apropiacion - programa.compromisos)}
+                      {formatCurrency(programa.apropiacionDefinitiva - programa.compromisos)}
                     </td>
                   </tr>
                 ))}
@@ -535,7 +650,10 @@ const EjecucionPresupuestal = () => {
                     {kpis.totalMetas}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900 dark:text-white text-right">
-                    {formatCurrency(kpis.totalApropiacion)}
+                    {formatCurrency(kpis.totalApropiacionInicial)}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-white text-right">
+                    {formatCurrency(kpis.totalApropiacionDefinitiva)}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900 dark:text-white text-right">
                     {formatCurrency(kpis.totalCompromisos)}

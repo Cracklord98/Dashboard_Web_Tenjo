@@ -130,9 +130,9 @@ export class MetasProductoService {
       apropiacion2024: this.parseNumber(row['APROPIACION 2024']),
       compromisos2024: this.parseNumber(row['COMPROMISOS 2024']),
       pagos2024: this.parseNumber(row['VALOR EJECUTADO']),
-      totalAsignado: this.parseNumber(row['TOTAL ASIGNADO']),
-      totalCompromisos: this.parseNumber(row['TOTAL COMPROMISOS']),
-      ejecucionFinanciera2024: this.parseNumber(row['% EJECUCION FINANCIERA']),
+      totalAsignado: this.parseNumber(row['TOTAL ASIGNADO 2024']),
+      totalCompromisos: this.parseNumber(row['TOTAL COMPROMISOS 2024']),
+      ejecucionFinanciera2024: this.parseNumber(row['% EJECUCIÓN FINANCIERA 2024']),
       
       // Campos financieros 2025
       apropiacionInicial2025: this.parseNumber(row['APROPIACION INICIAL 2025']),
@@ -212,9 +212,52 @@ export class MetasProductoService {
     if (!value) return 0;
     if (typeof value === 'number') return value;
     
-    const cleaned = value.toString()
-      .replace(/[$,%\s]/g, '')
-      .replace(/[^\d.-]/g, '');
+    let cleaned = value.toString().trim();
+    
+    // Remover símbolos de moneda, porcentajes y espacios
+    cleaned = cleaned.replace(/[$\s%]/g, '');
+    
+    if (cleaned === '-' || cleaned === '') return 0;
+
+    // Heurística para detectar formato de miles y decimales
+    const lastDot = cleaned.lastIndexOf('.');
+    const lastComma = cleaned.lastIndexOf(',');
+    
+    if (lastDot > -1 && lastComma > -1) {
+      if (lastDot < lastComma) {
+        // Formato europeo: 1.000,00 -> Remover puntos, reemplazar coma por punto
+        cleaned = cleaned.replace(/\./g, '').replace(',', '.');
+      } else {
+        // Formato americano: 1,000.00 -> Remover comas
+        cleaned = cleaned.replace(/,/g, '');
+      }
+    } else if (lastDot > -1) {
+      // Solo puntos.
+      const parts = cleaned.split('.');
+      if (parts.length > 2) {
+         // Más de un punto (ej: 1.000.000) -> Son separadores de miles
+         cleaned = cleaned.replace(/\./g, '');
+      } else {
+         // Un solo punto. Puede ser decimal (1.00) o miles (1.000)
+         // En Colombia se usa punto para miles, pero el dataset mezcla formatos.
+         // Heurística:
+         // 1. Si empieza por 0 (ej: 0.60), es decimal.
+         // 2. Si tiene exactamente 3 decimales (ej: 1.234), asumimos miles.
+         // 3. En otros casos (ej: 1.00, 1.5, 23.50), asumimos decimal.
+         const decimals = parts[1].length;
+         if (!cleaned.startsWith('0.') && decimals === 3) {
+             cleaned = cleaned.replace(/\./g, '');
+         }
+         // Si no entra en el if, dejamos el punto (se interpreta como decimal)
+      }
+    } else if (lastComma > -1) {
+      // Solo comas. Asumimos decimal si es única, miles si son varias
+      if ((cleaned.match(/,/g) || []).length > 1) {
+          cleaned = cleaned.replace(/,/g, '');
+      } else {
+          cleaned = cleaned.replace(',', '.');
+      }
+    }
     
     const parsed = parseFloat(cleaned);
     return isNaN(parsed) ? 0 : parsed;
@@ -245,14 +288,6 @@ export class MetasProductoService {
       
       logger.info(`✅ Recibidas ${rows.length} filas del CSV`);
       
-      if (rows.length > 0) {
-        logger.info(`📋 Columnas disponibles: ${Object.keys(rows[0]).slice(0, 10).join(', ')}...`);
-        logger.info(`📋 Total columnas: ${Object.keys(rows[0]).length}`);
-      } else {
-        logger.warn('⚠️ No se recibieron filas del CSV!');
-      }
-      
-      logger.info(`📦 Filas obtenidas: ${rows.length}`);
       if (rows.length > 0) {
         logger.info(`📋 Columnas disponibles: ${Object.keys(rows[0]).slice(0, 10).join(', ')}...`);
         logger.info(`📋 Total columnas: ${Object.keys(rows[0]).length}`);
@@ -315,10 +350,10 @@ export class MetasProductoService {
         lineaBase: row['L.B'] || '',
         meta2024: row['VALOR ESPERADO 2024'] || '',
         meta2025: row['VALOR ESPERADO 2025'] || '',
-        presupuesto2024: this.parseNumber(row['APROPIACION 2024']),
-        presupuesto2025: this.parseNumber(row['APROPIACION DEFINITIVA 2025']),
-        ejecutado2024: this.parseNumber(row['TOTAL EJECUTADO 2024']),
-        ejecutado2025: this.parseNumber(row['TOTAL EJECUTADO 2025']),
+        presupuesto2024: meta.apropiacion2024 ?? this.parseNumber(row['APROPIACION 2024']),
+        presupuesto2025: meta.apropiacionDefinitiva2025 ?? this.parseNumber(row['APROPIACION DEFINITIVA 2025']),
+        ejecutado2024: meta.totalEjecutado2024 ?? this.parseNumber(row['TOTAL EJECUTADO 2024']),
+        ejecutado2025: meta.totalEjecutado2025 ?? this.parseNumber(row['TOTAL EJECUTADO 2025']),
         trimestres: {
           t1: {
             planificado: this.parseNumber(row['T1 PLANIFICADO'] || row['Q1 PLAN']),

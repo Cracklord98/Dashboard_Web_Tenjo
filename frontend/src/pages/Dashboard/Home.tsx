@@ -154,17 +154,17 @@ function KpiCard({ title, value, icon, color }: { title: string, value: number, 
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-      <div className={`flex items-center justify-center w-10 h-10 rounded-xl ${colorClasses[color]}`}>
-        <span className="text-xl">{icon}</span>
-      </div>
-      <div className="mt-4">
+      <div className="flex items-center justify-between mb-3">
         <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
           {title}
         </span>
-        <h4 className="mt-1 text-2xl font-bold text-gray-800 dark:text-white/90">
-          {value.toLocaleString()}
-        </h4>
+        <div className={`flex items-center justify-center w-10 h-10 rounded-xl ${colorClasses[color]}`}>
+          <span className="text-xl">{icon}</span>
+        </div>
       </div>
+      <h4 className="text-2xl font-bold text-gray-800 dark:text-white/90">
+        {value.toLocaleString()}
+      </h4>
     </div>
   );
 }

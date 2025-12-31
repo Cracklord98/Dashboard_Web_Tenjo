@@ -136,26 +136,51 @@ const SecretariasPage = () => {
         {/* KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Presupuesto Definitivo</p>
-            <p className="text-xl font-bold text-gray-900 dark:text-white mt-1">{formatCurrency(kpis.totalDefinitiva)}</p>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Presupuesto Definitivo</p>
+              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gray-50 text-gray-600 dark:bg-gray-900/20 dark:text-gray-400">
+                <span className="text-xl">💰</span>
+              </div>
+            </div>
+            <p className="text-xl font-bold text-gray-900 dark:text-white">{formatCurrency(kpis.totalDefinitiva)}</p>
           </div>
           <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total Compromisos</p>
-            <p className="text-xl font-bold text-blue-600 dark:text-blue-400 mt-1">{formatCurrency(kpis.totalCompromisos)}</p>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total Compromisos</p>
+              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
+                <span className="text-xl">📋</span>
+              </div>
+            </div>
+            <p className="text-xl font-bold text-blue-600 dark:text-blue-400">{formatCurrency(kpis.totalCompromisos)}</p>
           </div>
           <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total Pagos</p>
-            <p className="text-xl font-bold text-green-600 dark:text-green-400 mt-1">{formatCurrency(kpis.totalPagos)}</p>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total Pagos</p>
+              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400">
+                <span className="text-xl">💵</span>
+              </div>
+            </div>
+            <p className="text-xl font-bold text-green-600 dark:text-green-400">{formatCurrency(kpis.totalPagos)}</p>
           </div>
           <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">% Ejecución Promedio</p>
-            <p className={`text-xl font-bold mt-1 ${getColorForPercentage(kpis.promedioEjecucion).text}`}>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">% Ejecución Promedio</p>
+              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400">
+                <span className="text-xl">📈</span>
+              </div>
+            </div>
+            <p className={`text-xl font-bold ${getColorForPercentage(kpis.promedioEjecucion).text}`}>
               {formatPercent(kpis.promedioEjecucion)}
             </p>
           </div>
           <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total Metas</p>
-            <p className="text-xl font-bold text-purple-600 dark:text-purple-400 mt-1">{kpis.totalMetas}</p>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Total Metas</p>
+              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400">
+                <span className="text-xl">🎯</span>
+              </div>
+            </div>
+            <p className="text-xl font-bold text-purple-600 dark:text-purple-400">{kpis.totalMetas}</p>
           </div>
         </div>
 

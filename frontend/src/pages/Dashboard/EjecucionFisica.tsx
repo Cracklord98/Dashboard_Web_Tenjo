@@ -6,7 +6,7 @@ import ErrorMessage from '../../components/common/ErrorMessage';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { obtenerMetasProducto } from '../../lib/api';
 import type { MetaProducto } from '../../types/metaProducto';
-import { formatPercent, parseNumber, calculatePercentage, getColorForPercentage } from '../../lib/formatters';
+import { formatPercent, parseNumber, calculatePercentage, getColorForPercentage, formatNumber } from '../../lib/formatters';
 
 // Custom Tooltip Component
 interface TooltipPayload {
@@ -397,7 +397,7 @@ const EjecucionFisica = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
               </svg>
             </div>
-            <p className="text-3xl font-bold">{totalMetas.toLocaleString('es-CO')}</p>
+            <p className="text-3xl font-bold">{formatNumber(totalMetas)}</p>
             <p className="text-xs opacity-75 mt-2">total filtradas</p>
           </div>
 
@@ -408,7 +408,7 @@ const EjecucionFisica = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
             </div>
-            <p className="text-3xl font-bold">{totalPlanificadas.toFixed(0)}</p>
+            <p className="text-3xl font-bold">{formatNumber(totalPlanificadas)}</p>
             <p className="text-xs opacity-75 mt-2">actividades programadas</p>
           </div>
 
@@ -419,7 +419,7 @@ const EjecucionFisica = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <p className="text-3xl font-bold">{totalEjecutadas.toFixed(0)}</p>
+            <p className="text-3xl font-bold">{formatNumber(totalEjecutadas)}</p>
             <p className="text-xs opacity-75 mt-2">actividades completadas</p>
           </div>
 
@@ -442,7 +442,7 @@ const EjecucionFisica = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
               </svg>
             </div>
-            <p className="text-3xl font-bold">{cumplidas}</p>
+            <p className="text-3xl font-bold">{formatNumber(cumplidas)}</p>
             <p className="text-xs opacity-75 mt-2">≥ 90% cumplimiento</p>
           </div>
 
@@ -453,7 +453,7 @@ const EjecucionFisica = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <p className="text-3xl font-bold">{enProceso}</p>
+            <p className="text-3xl font-bold">{formatNumber(enProceso)}</p>
             <p className="text-xs opacity-75 mt-2">50% - 89% cumplimiento</p>
           </div>
         </div>
@@ -529,7 +529,7 @@ const EjecucionFisica = () => {
               </thead>
               <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {datosTabla.map((item, index) => (
-                  <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
+                  <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                     <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white max-w-xs wrap-break-word" title={item.nombre}>
                       {item.nombre}
                     </td>
