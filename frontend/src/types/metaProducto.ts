@@ -16,6 +16,13 @@ export interface MetaProducto {
   responsable: string;
   avance2024: number;
   avance2025: number;
+  // Estados programado/no programado
+  estadoProgramado2024?: string;
+  estadoProgramado2025?: string;
+  // Porcentajes de avance
+  porcentajeAvance2024?: number | string;
+  porcentajeAvance2025?: number | string;
+  porcentajeAvanceCuatrienio?: number | string;
   soportes2024?: string;
   soportes2025?: string;
   

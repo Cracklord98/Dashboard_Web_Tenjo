@@ -15,6 +15,13 @@ interface MetaProducto {
   responsable: string;
   avance2024: number;
   avance2025: number;
+  // Estados programado/no programado
+  estadoProgramado2024?: string;
+  estadoProgramado2025?: string;
+  // Porcentajes de avance
+  porcentajeAvance2024?: number;
+  porcentajeAvance2025?: number;
+  porcentajeAvanceCuatrienio?: number;
   // URLs de soportes
   soportes2024?: string;
   soportes2025?: string;
@@ -122,6 +129,13 @@ export class MetasProductoService {
       responsable: row['RESPONSABLE'] || 'No asignado',
       avance2024: this.calcularAvance(row, '2024'),
       avance2025: this.calcularAvance(row, '2025'),
+      // Estados programado/no programado
+      estadoProgramado2024: row['ESTADO PROGRAMADO-NO PROGRAMADO 2024'] || '',
+      estadoProgramado2025: row['ESTADO PROGRAMADO-NO PROGRAMADO 2025'] || '',
+      // Porcentajes de avance
+      porcentajeAvance2024: this.parseNumber(row['% TOTAL AVANCE 2024']),
+      porcentajeAvance2025: this.parseNumber(row['% TOTAL AVANCE 2025']),
+      porcentajeAvanceCuatrienio: this.parseNumber(row['PORCENTAJE TOTAL PDM AVANCE CUATRIENIO']),
       // Extraer URLs de hipervínculos (solo disponible con API)
       soportes2024: row[' SOPORTES DE CUMPLIMIENTO 2024_URL'] || '',
       soportes2025: row[' SOPORTES DE CUMPLIMIENTO 2025_URL'] || '',

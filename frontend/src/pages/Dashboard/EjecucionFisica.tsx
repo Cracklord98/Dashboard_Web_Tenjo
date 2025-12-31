@@ -118,11 +118,36 @@ const EjecucionFisica = () => {
 
     const planeadoKey = añoSeleccionado === '2025' ? 'totalPlaneado2025' : 'totalPlaneado2024';
     const ejecutadoKey = añoSeleccionado === '2025' ? 'totalEjecutado2025' : 'totalEjecutado2024';
+    const estadoKey = añoSeleccionado === '2025' ? 'estadoProgramado2025' : 'estadoProgramado2024';
+    const porcentajeAvanceKey = añoSeleccionado === '2025' ? 'porcentajeAvance2025' : 'porcentajeAvance2024';
 
     // KPIs generales
     const totalPlanificadas = metasFiltradas.reduce((sum, m) => sum + parseNumber(m[planeadoKey]), 0);
     const totalEjecutadas = metasFiltradas.reduce((sum, m) => sum + parseNumber(m[ejecutadoKey]), 0);
     const porcentajeTotal = calculatePercentage(totalEjecutadas, totalPlanificadas);
+
+    // Contar metas programadas y no programadas
+    const metasProgramadas = metasFiltradas.filter(m => {
+      const estado = (m[estadoKey] || '').toString().trim().toUpperCase();
+      return estado === 'P';
+    }).length;
+    
+    const metasNoProgramadas = metasFiltradas.length - metasProgramadas;
+    
+    // Calcular porcentaje de metas programadas
+    const porcentajeMetasProgramadas = calculatePercentage(metasProgramadas, metasFiltradas.length);
+    
+    // Calcular promedio de % TOTAL AVANCE del año seleccionado
+    const promedioAvanceAño = metasFiltradas.reduce((sum, m) => {
+      const valor = parseNumber(m[porcentajeAvanceKey]);
+      return sum + (isNaN(valor) ? 0 : valor);
+    }, 0) / (metasFiltradas.length || 1);
+    
+    // Calcular promedio de PORCENTAJE TOTAL PDM AVANCE CUATRIENIO
+    const promedioAvanceCuatrienio = metasFiltradas.reduce((sum, m) => {
+      const valor = parseNumber(m.porcentajeAvanceCuatrienio);
+      return sum + (isNaN(valor) ? 0 : valor);
+    }, 0) / (metasFiltradas.length || 1);
 
     // Contar metas por estado
     const metasConEstado = metasFiltradas.map((meta) => {
@@ -251,7 +276,12 @@ const EjecucionFisica = () => {
       cumplidas,
       enProceso,
       pendientes,
-      totalMetas: metasFiltradas.length
+      totalMetas: metasFiltradas.length,
+      metasProgramadas,
+      metasNoProgramadas,
+      porcentajeMetasProgramadas,
+      promedioAvanceAño,
+      promedioAvanceCuatrienio
     };
   }, [metasFiltradas, añoSeleccionado, nivelTabla]);
 
@@ -259,7 +289,22 @@ const EjecucionFisica = () => {
   if (error) return <ErrorMessage message={error} />;
   if (!datosFisicos) return <ErrorMessage message="No hay datos disponibles" />;
 
-  const { datosTabla, top10, datosEstado, totalPlanificadas, totalEjecutadas, porcentajeTotal, cumplidas, enProceso, totalMetas } = datosFisicos;
+  const { 
+    datosTabla, 
+    top10, 
+    datosEstado, 
+    totalPlanificadas, 
+    totalEjecutadas, 
+    porcentajeTotal, 
+    cumplidas, 
+    enProceso, 
+    totalMetas,
+    metasProgramadas,
+    metasNoProgramadas,
+    porcentajeMetasProgramadas,
+    promedioAvanceAño,
+    promedioAvanceCuatrienio
+  } = datosFisicos;
 
   const getNivelLabel = () => {
     switch (nivelTabla) {
@@ -389,16 +434,63 @@ const EjecucionFisica = () => {
         </div>
 
         {/* KPIs Principales */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="bg-linear-to-br from-indigo-500 to-indigo-600 rounded-xl shadow-lg p-6 text-white">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-medium opacity-90">Metas de Producto</p>
+              <p className="text-sm font-medium opacity-90">Total Metas</p>
               <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
               </svg>
             </div>
             <p className="text-3xl font-bold">{formatNumber(totalMetas)}</p>
-            <p className="text-xs opacity-75 mt-2">total filtradas</p>
+            <p className="text-xs opacity-75 mt-2">Metas filtradas</p>
+          </div>
+
+          <div className="bg-linear-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-medium opacity-90">Metas Programadas {añoSeleccionado}</p>
+              <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <p className="text-3xl font-bold">{formatNumber(metasProgramadas)}</p>
+            <p className="text-xs opacity-75 mt-2">{formatPercent(porcentajeMetasProgramadas)} del total</p>
+          </div>
+
+          <div className="bg-linear-to-br from-gray-500 to-gray-600 rounded-xl shadow-lg p-6 text-white">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-medium opacity-90">Metas No Programadas {añoSeleccionado}</p>
+              <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+              </svg>
+            </div>
+            <p className="text-3xl font-bold">{formatNumber(metasNoProgramadas)}</p>
+            <p className="text-xs opacity-75 mt-2">{formatPercent(100 - porcentajeMetasProgramadas)} del total</p>
+          </div>
+
+          <div className={`bg-linear-to-br ${getColorForPercentage(promedioAvanceAño).gradient} rounded-xl shadow-lg p-6 text-white`}>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-medium opacity-90">% Avance {añoSeleccionado}</p>
+              <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+              </svg>
+            </div>
+            <p className="text-3xl font-bold">{formatPercent(promedioAvanceAño)}</p>
+            <p className="text-xs opacity-75 mt-2">Promedio de avance del año</p>
+          </div>
+        </div>
+
+        {/* Segunda Fila de KPIs */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+          <div className="bg-linear-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-medium opacity-90">Avance Cuatrienio</p>
+              <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <p className="text-3xl font-bold">{formatPercent(promedioAvanceCuatrienio)}</p>
+            <p className="text-xs opacity-75 mt-2">Avance PDM 2024-2027</p>
           </div>
 
           <div className="bg-linear-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
@@ -421,18 +513,6 @@ const EjecucionFisica = () => {
             </div>
             <p className="text-3xl font-bold">{formatNumber(totalEjecutadas)}</p>
             <p className="text-xs opacity-75 mt-2">actividades completadas</p>
-          </div>
-
-          <div className={`bg-linear-to-br ${getColorForPercentage(porcentajeTotal).gradient} rounded-xl shadow-lg p-6 text-white`}>
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-medium opacity-90">% Cumplimiento</p>
-              <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
-              </svg>
-            </div>
-            <p className="text-3xl font-bold">{formatPercent(porcentajeTotal)}</p>
-            <p className="text-xs opacity-75 mt-2">Ejecutadas / Planificadas</p>
           </div>
 
           <div className="bg-linear-to-br from-teal-500 to-teal-600 rounded-xl shadow-lg p-6 text-white">

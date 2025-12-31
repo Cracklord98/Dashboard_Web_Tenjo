@@ -15,8 +15,8 @@ interface DatosPrograma {
   compromisos: number;
   pagos: number;
   metas: number;
-  porcentajeEjecucion?: number;
-  porcentajePagos?: number;
+  porcentajeEjecucion: number;
+  porcentajePagos: number;
 }
 
 interface DatosEje {
@@ -25,7 +25,7 @@ interface DatosEje {
   apropiacionDefinitiva: number;
   compromisos: number;
   metas: number;
-  porcentaje?: number;
+  porcentaje: number;
 }
 
 interface TooltipProps {
@@ -41,6 +41,38 @@ interface TooltipProps {
     };
   }>;
 }
+
+// Moved outside component to prevent re-renders
+const CustomTooltip = ({ active, payload }: TooltipProps) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700">
+        <p className="font-semibold text-gray-900 dark:text-white mb-2">
+          {payload[0].payload.nombre || payload[0].payload.anio}
+        </p>
+        {payload.map((entry, index: number) => (
+          <div key={index} className="flex items-center justify-between gap-4 text-sm">
+            <span className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }}></span>
+              <span className="text-gray-600 dark:text-gray-400">{entry.name}:</span>
+            </span>
+            <span className="font-semibold text-gray-900 dark:text-white">
+              {formatCurrency(entry.value)}
+            </span>
+          </div>
+        ))}
+        {payload[0].payload.metas !== undefined && (
+          <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              Total metas: <span className="font-semibold">{payload[0].payload.metas}</span>
+            </span>
+          </div>
+        )}
+      </div>
+    );
+  }
+  return null;
+};
 
 const EjecucionPresupuestal = () => {
   const [metas, setMetas] = useState<MetaProducto[]>([]);
@@ -63,7 +95,6 @@ const EjecucionPresupuestal = () => {
       setLoading(true);
       setError(null);
       const metas = await obtenerMetasProducto();
-      console.log('✅ Metas cargadas:', metas.length);
       setMetas(metas || []);
       setUltimaActualizacion(new Date());
       setMostrarNotificacion(true);
@@ -89,7 +120,6 @@ const EjecucionPresupuestal = () => {
       filtradas = filtradas.filter(m => m.programa === programaSeleccionado);
     }
     
-    console.log(`📊 Metas filtradas: ${filtradas.length} de ${metas.length}`);
     return filtradas;
   }, [metas, ejeSeleccionado, programaSeleccionado]);
 
@@ -113,45 +143,16 @@ const EjecucionPresupuestal = () => {
     if (!metasFiltradas.length) return null;
 
     // KPIs generales del año seleccionado
-    const apropiacionInicialKey = añoSeleccionado === '2025' ? 'apropiacionInicial2025' : 'apropiacion2024';
-    const apropiacionDefinitivaKey = añoSeleccionado === '2025' ? 'apropiacionDefinitiva2025' : 'apropiacion2024';
-    const compromisosKey = añoSeleccionado === '2025' ? 'compromisos2025' : 'compromisos2024';
-    const pagosKey = añoSeleccionado === '2025' ? 'pagos2025' : 'pagos2024';
-
-    // Debug: Verificar valores de las primeras metas
-    console.log('=== DEBUG DATOS FINANCIEROS ===');
-    console.log('Año seleccionado:', añoSeleccionado);
-    console.log('Metas filtradas:', metasFiltradas.length);
-    if (metasFiltradas.length > 0) {
-      const primerasMetas = metasFiltradas.slice(0, 3);
-      primerasMetas.forEach((m: MetaProducto, i: number) => {
-        console.log(`Meta ${i + 1}:`, {
-          apropiacionInicial: m[apropiacionInicialKey],
-          apropiacionDefinitiva: m[apropiacionDefinitivaKey],
-          compromisos: m[compromisosKey],
-          pagos: m[pagosKey],
-          parseInicial: parseNumber(m[apropiacionInicialKey]),
-          parseDefinitiva: parseNumber(m[apropiacionDefinitivaKey]),
-          parseCompromisos: parseNumber(m[compromisosKey]),
-          parsePagos: parseNumber(m[pagosKey]),
-        });
-      });
-    }
+    const apropiacionInicialKey = (añoSeleccionado === '2025' ? 'apropiacionInicial2025' : 'apropiacion2024') as keyof MetaProducto;
+    const apropiacionDefinitivaKey = (añoSeleccionado === '2025' ? 'apropiacionDefinitiva2025' : 'apropiacion2024') as keyof MetaProducto;
+    const compromisosKey = (añoSeleccionado === '2025' ? 'compromisos2025' : 'compromisos2024') as keyof MetaProducto;
+    const pagosKey = (añoSeleccionado === '2025' ? 'pagos2025' : 'pagos2024') as keyof MetaProducto;
 
     const totalApropiacionInicial = metasFiltradas.reduce((sum, m: MetaProducto) => sum + parseNumber(m[apropiacionInicialKey]), 0);
     const totalApropiacionDefinitiva = metasFiltradas.reduce((sum, m: MetaProducto) => sum + parseNumber(m[apropiacionDefinitivaKey]), 0);
     const totalCompromisos = metasFiltradas.reduce((sum, m: MetaProducto) => sum + parseNumber(m[compromisosKey]), 0);
     const totalPagos = metasFiltradas.reduce((sum, m: MetaProducto) => sum + parseNumber(m[pagosKey]), 0);
     const porcentajeEjecucion = calculatePercentage(totalCompromisos, totalApropiacionDefinitiva);
-
-    console.log('TOTALES CALCULADOS:', {
-      totalApropiacionInicial,
-      totalApropiacionDefinitiva,
-      totalCompromisos,
-      totalPagos,
-      porcentajeEjecucion
-    });
-    console.log('==============================');
 
     // Datos por programa
     const datosPorPrograma = metasFiltradas.reduce((acc: DatosPrograma[], meta: MetaProducto) => {
@@ -177,6 +178,8 @@ const EjecucionPresupuestal = () => {
           compromisos,
           pagos,
           metas: 1,
+          porcentajeEjecucion: 0,
+          porcentajePagos: 0,
         });
       }
 
@@ -207,7 +210,7 @@ const EjecucionPresupuestal = () => {
         existe.compromisos += compromisos;
         existe.metas += 1;
       } else {
-        acc.push({ nombre: eje, apropiacionInicial, apropiacionDefinitiva, compromisos, metas: 1 });
+        acc.push({ nombre: eje, apropiacionInicial, apropiacionDefinitiva, compromisos, metas: 1, porcentaje: 0 });
       }
 
       return acc;
@@ -237,8 +240,8 @@ const EjecucionPresupuestal = () => {
     if (!metasFiltradas.length) return [];
 
     const datos2024 = metasFiltradas.reduce((acc: { apropiacion: number; compromisos: number }, m: MetaProducto) => ({
-      apropiacion: acc.apropiacion + parseNumber(m.apropiacion2024),
-      compromisos: acc.compromisos + parseNumber(m.compromisos2024),
+      apropiacion: acc.apropiacion + parseNumber(m['apropiacion2024' as keyof MetaProducto]),
+      compromisos: acc.compromisos + parseNumber(m['compromisos2024' as keyof MetaProducto]),
     }), { apropiacion: 0, compromisos: 0 });
 
     const datos2025 = metasFiltradas.reduce((acc: { apropiacion: number; compromisos: number }, m: MetaProducto) => ({
@@ -263,38 +266,6 @@ const EjecucionPresupuestal = () => {
   }, [metasFiltradas]);
 
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
-
-  // Tooltip personalizado mejorado
-  const CustomTooltip = ({ active, payload }: TooltipProps) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700">
-          <p className="font-semibold text-gray-900 dark:text-white mb-2">
-            {payload[0].payload.nombre || payload[0].payload.anio}
-          </p>
-          {payload.map((entry, index: number) => (
-            <div key={index} className="flex items-center justify-between gap-4 text-sm">
-              <span className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }}></span>
-                <span className="text-gray-600 dark:text-gray-400">{entry.name}:</span>
-              </span>
-              <span className="font-semibold text-gray-900 dark:text-white">
-                {formatCurrency(entry.value)}
-              </span>
-            </div>
-          ))}
-          {payload[0].payload.metas && (
-            <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                Total metas: <span className="font-semibold">{payload[0].payload.metas}</span>
-              </span>
-            </div>
-          )}
-        </div>
-      );
-    }
-    return null;
-  };
 
   if (loading) return <Loading />;
   if (error) return <ErrorMessage message={error} onRetry={cargarDatos} />;
