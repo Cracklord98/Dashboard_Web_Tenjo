@@ -139,15 +139,35 @@ const EjecucionFisica = () => {
     const porcentajeMetasProgramadas = calculatePercentage(metasProgramadas, metasFiltradas.length);
     
     // Calcular promedio de % TOTAL AVANCE del año seleccionado
+    // Usar el campo porcentajeAvanceKey si existe, sino calcularlo desde ejecutado/planeado
     const promedioAvanceAño = metasFiltradas.reduce((sum, m) => {
-      const valor = parseNumber(m[porcentajeAvanceKey]);
-      return sum + (isNaN(valor) ? 0 : valor);
+      // Primero intentar usar el campo de porcentaje si existe
+      const valorDirecto = parseNumber(m[porcentajeAvanceKey]);
+      if (valorDirecto > 0) {
+        return sum + valorDirecto;
+      }
+      // Si no existe, calcular desde ejecutado/planeado
+      const ejecutado = parseNumber(m[ejecutadoKey]);
+      const planeado = parseNumber(m[planeadoKey]);
+      const calculado = planeado > 0 ? (ejecutado / planeado) * 100 : 0;
+      return sum + calculado;
     }, 0) / (metasFiltradas.length || 1);
     
     // Calcular promedio de PORCENTAJE TOTAL PDM AVANCE CUATRIENIO
+    // Usar el campo si existe, sino calcular como promedio de avances 2024 y 2025
     const promedioAvanceCuatrienio = metasFiltradas.reduce((sum, m) => {
-      const valor = parseNumber(m.porcentajeAvanceCuatrienio);
-      return sum + (isNaN(valor) ? 0 : valor);
+      // Primero intentar usar el campo directo
+      const valorDirecto = parseNumber(m.porcentajeAvanceCuatrienio);
+      if (valorDirecto > 0) {
+        return sum + valorDirecto;
+      }
+      // Si no existe, calcular como promedio de avances de ambos años
+      const avance2024 = parseNumber(m.porcentajeAvance2024) || calculatePercentage(parseNumber(m.totalEjecutado2024), parseNumber(m.totalPlaneado2024));
+      const avance2025 = parseNumber(m.porcentajeAvance2025) || calculatePercentage(parseNumber(m.totalEjecutado2025), parseNumber(m.totalPlaneado2025));
+      // Promedio simple de los años disponibles (considera 4 años del cuatrienio, 2024-2027, pero solo tenemos 2)
+      const promedioAnual = (avance2024 + avance2025) / 2;
+      // Escalar al cuatrienio (2 años de 4 = 50% del período, por lo que el avance es proporcional)
+      return sum + (promedioAnual * 0.5); // Solo llevamos 2 de 4 años
     }, 0) / (metasFiltradas.length || 1);
 
     // Contar metas por estado
