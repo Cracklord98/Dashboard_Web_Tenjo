@@ -116,6 +116,10 @@ export class MetasProductoService {
    * Mapea una fila de Google Sheets a un objeto MetaProducto
    */
   private mapToMetaProducto(row: Record<string, any>, index: number): MetaProducto {
+    // Obtener estados programado para ambos años con fallback
+    const estadoProg2024 = row['ESTADO PROGRAMADO-NO PROGRAMADO 2024'] || '';
+    const estadoProg2025 = row['ESTADO PROGRAMADO-NO PROGRAMADO 2025'] || estadoProg2024; // Fallback a 2024 si 2025 no existe
+    
     return {
       id: index + 1,
       meta: row['META DE PRODUCTO'] || '',
@@ -124,14 +128,14 @@ export class MetasProductoService {
       subprograma: row['SUBPROGRAMA'] || '',
       metaResultado: row['META DE RESULTADO'] || '',
       proyecto: row['NOMBRE DEL PROYECTO'] || '',
-      estadoEvaluacion: row['ESTADO PROGRAMADO-NO PROGRAMADO 2024'] || 'Pendiente',
+      estadoEvaluacion: estadoProg2024 || 'Pendiente',
       estado: this.calcularEstado(row),
       responsable: row['RESPONSABLE'] || 'No asignado',
       avance2024: this.calcularAvance(row, '2024'),
       avance2025: this.calcularAvance(row, '2025'),
-      // Estados programado/no programado
-      estadoProgramado2024: row['ESTADO PROGRAMADO-NO PROGRAMADO 2024'] || '',
-      estadoProgramado2025: row['ESTADO PROGRAMADO-NO PROGRAMADO 2025'] || '',
+      // Estados programado/no programado - asegurar que siempre tengan valor
+      estadoProgramado2024: estadoProg2024,
+      estadoProgramado2025: estadoProg2025,
       // Porcentajes de avance
       porcentajeAvance2024: this.parseNumber(row['% TOTAL AVANCE 2024']),
       porcentajeAvance2025: this.parseNumber(row['% TOTAL AVANCE 2025']),

@@ -127,8 +127,9 @@ const EjecucionFisica = () => {
     const porcentajeTotal = calculatePercentage(totalEjecutadas, totalPlanificadas);
 
     // Contar metas programadas y no programadas
+    // Usar estadoKey con fallback a estadoEvaluacion si no existe
     const metasProgramadas = metasFiltradas.filter(m => {
-      const estado = (m[estadoKey] || '').toString().trim().toUpperCase();
+      const estado = (m[estadoKey] || m.estadoEvaluacion || '').toString().trim().toUpperCase();
       return estado === 'P';
     }).length;
     
