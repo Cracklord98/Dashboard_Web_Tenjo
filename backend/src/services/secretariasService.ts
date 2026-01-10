@@ -40,15 +40,26 @@ export class SecretariasService {
         .filter(row => row['RESPONSABLE'] && row['RESPONSABLE'].trim() !== '')
         .map(row => {
           try {
+            const apropiacionDefinitiva = this.parseNumber(row['APROPIACION DEFINITIVA 2025']);
+            const compromisos = this.parseNumber(row['COMPROMISOS 2025']);
+            
+            // Intentar obtener el porcentaje desde la hoja
+            let porcentajeEjecucion = this.parseNumber(row['% EJECUCIÓN PPTO OCT 27-2025']);
+            
+            // Si el porcentaje es 0 o no existe, calcularlo manualmente
+            if (porcentajeEjecucion === 0 && apropiacionDefinitiva > 0) {
+              porcentajeEjecucion = (compromisos / apropiacionDefinitiva) * 100;
+            }
+            
             return {
               responsable: row['RESPONSABLE'] || '',
               totalMetas: this.parseNumber(row['TOTAL METAS']),
               metasProgramadas2025: this.parseNumber(row['METAS PROGRAMADAS 2025']),
               apropiacionInicial2025: this.parseNumber(row['APROPIACION INICIAL 2025']),
-              apropiacionDefinitiva2025: this.parseNumber(row['APROPIACION DEFINITIVA 2025']),
-              compromisos2025: this.parseNumber(row['COMPROMISOS 2025']),
+              apropiacionDefinitiva2025: apropiacionDefinitiva,
+              compromisos2025: compromisos,
               pagos2025: this.parseNumber(row['PAGOS 2025']),
-              porcentajeEjecucion: this.parseNumber(row['% EJECUCIÓN PPTO OCT 27-2025']),
+              porcentajeEjecucion: porcentajeEjecucion,
             };
           } catch (e) {
             logger.error('Error mapeando fila de secretaría:', e);

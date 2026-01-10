@@ -34,15 +34,7 @@ export const formatPercent = (value: number, decimals: number = 1): string => {
 export const formatCompactNumber = (value: number): string => {
   if (value === null || value === undefined || isNaN(value)) return '$0';
   
-  if (value >= 1000000000) {
-    return `$${(value / 1000000000).toFixed(1)}B`;
-  }
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`;
-  }
-  if (value >= 1000) {
-    return `$${(value / 1000).toFixed(1)}K`;
-  }
+  // Mostrar el número completo formateado como moneda
   return formatCurrency(value);
 };
 

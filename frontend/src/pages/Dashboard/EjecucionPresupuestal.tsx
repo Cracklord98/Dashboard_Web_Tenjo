@@ -400,82 +400,77 @@ const EjecucionPresupuestal = () => {
 
         {/* KPIs Principales */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-6">
-          <div className="bg-linear-to-br from-indigo-500 to-indigo-600 rounded-xl shadow-lg p-6 text-white">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-medium opacity-90">Metas de Producto</p>
-              <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="bg-linear-to-br from-indigo-500 to-indigo-600 rounded-xl shadow-lg p-4 text-white">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-medium opacity-90">Metas de Producto</p>
+              <svg className="w-6 h-6 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
               </svg>
             </div>
-            <p className="text-3xl font-bold">{kpis.totalMetas.toLocaleString('es-CO')}</p>
-            <p className="text-xs opacity-75 mt-2">total filtradas</p>
+            <p className="text-2xl font-bold break-words">{kpis.totalMetas.toLocaleString('es-CO')}</p>
+            <p className="text-xs opacity-75 mt-1">total filtradas</p>
           </div>
 
-          <div className="bg-linear-to-br from-cyan-500 to-cyan-600 rounded-xl shadow-lg p-6 text-white">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-medium opacity-90">Apropiación Inicial {añoSeleccionado}</p>
-              <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="bg-linear-to-br from-cyan-500 to-cyan-600 rounded-xl shadow-lg p-4 text-white">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-medium opacity-90">Apropiación Inicial {añoSeleccionado}</p>
+              <svg className="w-6 h-6 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
               </svg>
             </div>
-            <p className="text-3xl font-bold">{formatCompactNumber(kpis.totalApropiacionInicial)}</p>
-            <p className="text-xs opacity-75 mt-2">{formatCurrency(kpis.totalApropiacionInicial)}</p>
+            <p className="text-lg font-bold break-words leading-tight">{formatCurrency(kpis.totalApropiacionInicial)}</p>
           </div>
 
-          <div className="bg-linear-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-medium opacity-90">Apropiación Definitiva {añoSeleccionado}</p>
-              <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="bg-linear-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-4 text-white">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-medium opacity-90">Apropiación Definitiva {añoSeleccionado}</p>
+              <svg className="w-6 h-6 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <p className="text-3xl font-bold">{formatCompactNumber(kpis.totalApropiacionDefinitiva)}</p>
-            <p className="text-xs opacity-75 mt-2">{formatCurrency(kpis.totalApropiacionDefinitiva)}</p>
+            <p className="text-lg font-bold break-words leading-tight">{formatCurrency(kpis.totalApropiacionDefinitiva)}</p>
           </div>
 
-          <div className="bg-linear-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-medium opacity-90">Compromisos {añoSeleccionado}</p>
-              <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="bg-linear-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-4 text-white">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-medium opacity-90">Compromisos {añoSeleccionado}</p>
+              <svg className="w-6 h-6 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <p className="text-3xl font-bold">{formatCompactNumber(kpis.totalCompromisos)}</p>
-            <p className="text-xs opacity-75 mt-2">{formatCurrency(kpis.totalCompromisos)}</p>
+            <p className="text-lg font-bold break-words leading-tight">{formatCurrency(kpis.totalCompromisos)}</p>
           </div>
 
-          <div className="bg-linear-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-medium opacity-90">Pagos {añoSeleccionado}</p>
-              <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="bg-linear-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-4 text-white">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-medium opacity-90">Pagos {añoSeleccionado}</p>
+              <svg className="w-6 h-6 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
             </div>
-            <p className="text-3xl font-bold">{formatCompactNumber(kpis.totalPagos)}</p>
-            <p className="text-xs opacity-75 mt-2">{formatCurrency(kpis.totalPagos)}</p>
+            <p className="text-lg font-bold break-words leading-tight">{formatCurrency(kpis.totalPagos)}</p>
           </div>
 
-          <div className="bg-linear-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-medium opacity-90">% Ejecución Presupuestal {añoSeleccionado}</p>
-              <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="bg-linear-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-4 text-white">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-medium opacity-90">% Ejecución Presupuestal {añoSeleccionado}</p>
+              <svg className="w-6 h-6 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
               </svg>
             </div>
-            <p className="text-3xl font-bold">{formatPercent(kpis.porcentajeEjecucion, 1)}</p>
-            <p className="text-xs opacity-75 mt-2">Compromisos / Apropiación Definitiva</p>
+            <p className="text-2xl font-bold break-words">{formatPercent(kpis.porcentajeEjecucion, 1)}</p>
+            <p className="text-xs opacity-75 mt-1">Compromisos / Apropiación Definitiva</p>
           </div>
 
-          <div className="bg-linear-to-br from-gray-600 to-gray-700 rounded-xl shadow-lg p-6 text-white">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-medium opacity-90">Saldo Disponible {añoSeleccionado}</p>
-              <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="bg-linear-to-br from-gray-600 to-gray-700 rounded-xl shadow-lg p-4 text-white">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-medium opacity-90">Saldo Disponible {añoSeleccionado}</p>
+              <svg className="w-6 h-6 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
               </svg>
             </div>
-            <p className="text-3xl font-bold">{formatCompactNumber(kpis.saldoDisponible)}</p>
-            <p className="text-xs opacity-75 mt-2">{formatCurrency(kpis.saldoDisponible)}</p>
+            <p className="text-lg font-bold break-words leading-tight">{formatCurrency(kpis.saldoDisponible)}</p>
           </div>
         </div>
 
