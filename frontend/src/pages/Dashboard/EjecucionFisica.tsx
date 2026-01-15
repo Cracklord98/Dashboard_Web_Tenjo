@@ -318,7 +318,8 @@ const EjecucionFisica = () => {
     totalEjecutadas, 
     porcentajeTotal, 
     cumplidas, 
-    enProceso, 
+    enProceso,
+    pendientes,
     totalMetas,
     metasProgramadas,
     metasNoProgramadas,
@@ -502,7 +503,7 @@ const EjecucionFisica = () => {
         </div>
 
         {/* Segunda Fila de KPIs */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="bg-linear-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
             <div className="flex items-center justify-between mb-3">
               <p className="text-sm font-medium opacity-90">Avance Cuatrienio</p>
@@ -514,29 +515,7 @@ const EjecucionFisica = () => {
             <p className="text-xs opacity-75 mt-2">Avance PDM 2024-2027</p>
           </div>
 
-          <div className="bg-linear-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-medium opacity-90">Programadas</p>
-              <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
-            </div>
-            <p className="text-3xl font-bold">{formatNumber(totalPlanificadas)}</p>
-            <p className="text-xs opacity-75 mt-2">actividades programadas</p>
-          </div>
-
           <div className="bg-linear-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-medium opacity-90">Ejecutadas</p>
-              <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <p className="text-3xl font-bold">{formatNumber(totalEjecutadas)}</p>
-            <p className="text-xs opacity-75 mt-2">actividades completadas</p>
-          </div>
-
-          <div className="bg-linear-to-br from-teal-500 to-teal-600 rounded-xl shadow-lg p-6 text-white">
             <div className="flex items-center justify-between mb-3">
               <p className="text-sm font-medium opacity-90">Cumplidas</p>
               <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -547,7 +526,7 @@ const EjecucionFisica = () => {
             <p className="text-xs opacity-75 mt-2">≥ 90% cumplimiento</p>
           </div>
 
-          <div className="bg-linear-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
+          <div className="bg-linear-to-br from-yellow-500 to-yellow-600 rounded-xl shadow-lg p-6 text-white">
             <div className="flex items-center justify-between mb-3">
               <p className="text-sm font-medium opacity-90">En Proceso</p>
               <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -556,6 +535,17 @@ const EjecucionFisica = () => {
             </div>
             <p className="text-3xl font-bold">{formatNumber(enProceso)}</p>
             <p className="text-xs opacity-75 mt-2">50% - 89% cumplimiento</p>
+          </div>
+
+          <div className="bg-linear-to-br from-red-500 to-red-600 rounded-xl shadow-lg p-6 text-white">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-medium opacity-90">Pendientes</p>
+              <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <p className="text-3xl font-bold">{formatNumber(pendientes)}</p>
+            <p className="text-xs opacity-75 mt-2">&lt; 50% cumplimiento</p>
           </div>
         </div>
 
@@ -615,12 +605,6 @@ const EjecucionFisica = () => {
                     Metas Producto
                   </th>
                   <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Programadas
-                  </th>
-                  <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Ejecutadas
-                  </th>
-                  <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     % Cumplimiento
                   </th>
                   <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -638,12 +622,6 @@ const EjecucionFisica = () => {
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
                         {item.metas}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300 text-center">
-                      {item.planificadas.toFixed(0)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300 text-center">
-                      {item.ejecutadas.toFixed(0)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -674,12 +652,6 @@ const EjecucionFisica = () => {
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900 dark:text-white text-center">
                     {totalMetas}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-white text-center">
-                    {totalPlanificadas.toFixed(0)}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-white text-center">
-                    {totalEjecutadas.toFixed(0)}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900 dark:text-white text-center">
                     {formatPercent(porcentajeTotal)}
