@@ -314,8 +314,6 @@ const EjecucionFisica = () => {
     datosTabla, 
     top10, 
     datosEstado, 
-    totalPlanificadas, 
-    totalEjecutadas, 
     porcentajeTotal, 
     cumplidas, 
     enProceso,
