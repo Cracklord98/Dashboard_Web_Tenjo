@@ -194,6 +194,10 @@ const EjecucionFisica = () => {
       ejecutadas: number;
       porcentaje: number;
       metas: number;
+      codigoMeta?: string;
+      responsable?: string;
+      estadoProgramado?: string;
+      porcentajeAvance?: number;
     }
     
     let datosTabla: DatoTabla[] = [];
@@ -256,7 +260,7 @@ const EjecucionFisica = () => {
         metas: data.metas
       }));
     } else {
-      // Nivel meta - mostrar cada meta individualmente
+      // Nivel meta - mostrar cada meta individualmente con más detalle
       datosTabla = metasFiltradas.map((meta) => {
         // Construir nombre más descriptivo
         let nombre = meta.meta || meta.metaResultado || meta.proyecto || '';
@@ -265,20 +269,42 @@ const EjecucionFisica = () => {
         }
         if (!nombre) nombre = 'Meta sin descripción';
         
+        // Obtener estado programado del año seleccionado
+        const estadoProg = (meta[estadoKey] || meta.estadoEvaluacion || '').toString().trim().toUpperCase();
+        const porcentajeAvanceVal = parseNumber(meta[porcentajeAvanceKey]) || calculatePercentage(parseNumber(meta[ejecutadoKey]), parseNumber(meta[planeadoKey]));
+        
         return {
           nombre: nombre.trim(),
           planificadas: parseNumber(meta[planeadoKey]),
           ejecutadas: parseNumber(meta[ejecutadoKey]),
           porcentaje: calculatePercentage(parseNumber(meta[ejecutadoKey]), parseNumber(meta[planeadoKey])),
-          metas: 1
+          metas: 1,
+          codigoMeta: meta.codigoMeta || '-',
+          responsable: meta.responsable || '-',
+          estadoProgramado: estadoProg === 'P' ? 'Programada' : 'No Programada',
+          porcentajeAvance: porcentajeAvanceVal
         };
       });
     }
 
-    datosTabla.sort((a, b) => b.planificadas - a.planificadas);
+    // Ordenar según el nivel de visualización
+    if (nivelTabla === 'eje') {
+      // Ordenar ejes numéricamente (Eje 1, Eje 2, Eje 3, etc.)
+      datosTabla.sort((a, b) => {
+        const numA = parseInt(a.nombre.replace(/\D/g, '')) || 999;
+        const numB = parseInt(b.nombre.replace(/\D/g, '')) || 999;
+        return numA - numB;
+      });
+    } else if (nivelTabla === 'programa' || nivelTabla === 'subprograma') {
+      // Ordenar alfabéticamente para programas y subprogramas
+      datosTabla.sort((a, b) => a.nombre.localeCompare(b.nombre));
+    } else {
+      // Para metas, ordenar por porcentaje de cumplimiento descendente
+      datosTabla.sort((a, b) => b.porcentaje - a.porcentaje);
+    }
 
-    // Top 10 para gráficas
-    const top10 = datosTabla.slice(0, 10);
+    // Top 10 para gráficas (ordenar por planificadas para el gráfico)
+    const top10 = [...datosTabla].sort((a, b) => b.planificadas - a.planificadas).slice(0, 10);
 
     // Datos para gráfica de estado
     const datosEstado = [
@@ -294,6 +320,10 @@ const EjecucionFisica = () => {
       totalPlanificadas,
       totalEjecutadas,
       porcentajeTotal,
+      // Calcular el porcentaje promedio de la tabla actual (promedio ponderado por metas)
+      porcentajePromedioTabla: datosTabla.length > 0 
+        ? datosTabla.reduce((sum, item) => sum + (item.porcentaje * item.metas), 0) / datosTabla.reduce((sum, item) => sum + item.metas, 0)
+        : 0,
       cumplidas,
       enProceso,
       pendientes,
@@ -314,7 +344,7 @@ const EjecucionFisica = () => {
     datosTabla, 
     top10, 
     datosEstado, 
-    porcentajeTotal, 
+    porcentajePromedioTabla,
     cumplidas, 
     enProceso,
     pendientes,
@@ -591,75 +621,240 @@ const EjecucionFisica = () => {
         </div>
 
         {/* Tabla Detallada con Profundidad Configurable */}
-        <ComponentCard title={`Detalle por ${getNivelLabel()} - ${añoSeleccionado}`}>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-900">
-                <tr>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    {getNivelLabel()}
-                  </th>
-                  <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Metas Producto
-                  </th>
-                  <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    % Cumplimiento
-                  </th>
-                  <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Estado
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {datosTabla.map((item, index) => (
-                  <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white max-w-xs wrap-break-word" title={item.nombre}>
-                      {item.nombre}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300 text-center">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
-                        {item.metas}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        item.porcentaje >= 90 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                        item.porcentaje >= 70 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
-                        item.porcentaje >= 50 ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' :
-                        'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                      }`}>
-                        {formatPercent(item.porcentaje)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                        item.porcentaje >= 90 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' :
-                        item.porcentaje >= 50 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' :
-                        'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-                      }`}>
-                        {item.porcentaje >= 90 ? 'Cumplida' : item.porcentaje >= 50 ? 'En Proceso' : 'Pendiente'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot className="bg-gray-100 dark:bg-gray-900">
-                <tr className="font-bold">
-                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
-                    TOTAL
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-white text-center">
-                    {totalMetas}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-white text-center">
-                    {formatPercent(porcentajeTotal)}
-                  </td>
-                  <td></td>
-                </tr>
-              </tfoot>
-            </table>
+        <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+          {/* Header con selector de vista */}
+          <div className="px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 className="text-base font-medium text-gray-800 dark:text-white/90">
+              Detalle por {getNivelLabel()} - {añoSeleccionado}
+            </h3>
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                onClick={() => setNivelTabla('eje')}
+                className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  nivelTabla === 'eje'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                Por Eje
+              </button>
+              <button
+                onClick={() => setNivelTabla('programa')}
+                className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  nivelTabla === 'programa'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                Por Programa
+              </button>
+              <button
+                onClick={() => setNivelTabla('subprograma')}
+                className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  nivelTabla === 'subprograma'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                Por Subprograma
+              </button>
+              <button
+                onClick={() => setNivelTabla('meta')}
+                className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  nivelTabla === 'meta'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                🎯 Por Meta
+              </button>
+            </div>
           </div>
-        </ComponentCard>
+
+          {/* Body */}
+          <div className="px-6 py-6">
+            <div className="overflow-x-auto">
+              {nivelTabla === 'meta' ? (
+                /* Tabla detallada para metas individuales */
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-900">
+                    <tr>
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Código
+                      </th>
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Meta de Producto
+                      </th>
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Responsable
+                      </th>
+                      <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Planeado<br/>{añoSeleccionado}
+                      </th>
+                      <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Ejecutado<br/>{añoSeleccionado}
+                      </th>
+                      <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        % Avance<br/>{añoSeleccionado}
+                      </th>
+                    <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Estado<br/>Programado
+                    </th>
+                    <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Estado<br/>Cumplimiento
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  {datosTabla.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                        No hay metas disponibles para mostrar
+                      </td>
+                    </tr>
+                  ) : (
+                    datosTabla.map((item, index) => (
+                      <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                        <td className="px-3 py-3 whitespace-nowrap text-sm font-mono font-medium text-blue-600 dark:text-blue-400">
+                          {item.codigoMeta || '-'}
+                        </td>
+                        <td className="px-3 py-3 text-sm text-gray-900 dark:text-white">
+                          <div className="max-w-xs truncate" title={item.nombre}>
+                            {item.nombre}
+                          </div>
+                        </td>
+                        <td className="px-3 py-3 text-sm text-gray-700 dark:text-gray-300">
+                          <div className="max-w-36 truncate" title={item.responsable}>
+                            {item.responsable || '-'}
+                          </div>
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap text-sm text-right text-gray-900 dark:text-white">
+                          {formatNumber(item.planificadas, 1)}
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap text-sm text-right text-blue-600 dark:text-blue-400 font-medium">
+                          {formatNumber(item.ejecutadas, 1)}
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap text-center">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            (item.porcentajeAvance || item.porcentaje) >= 90 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                            (item.porcentajeAvance || item.porcentaje) >= 70 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                            (item.porcentajeAvance || item.porcentaje) >= 50 ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' :
+                            'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                          }`}>
+                            {formatPercent(item.porcentajeAvance || item.porcentaje)}
+                          </span>
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap text-center">
+                          <span className={`px-2 py-1 rounded-lg text-xs font-medium ${
+                            item.estadoProgramado === 'Programada' 
+                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                              : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                          }`}>
+                            {item.estadoProgramado || 'N/A'}
+                          </span>
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap text-center">
+                          <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                            item.porcentaje >= 90 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' :
+                            item.porcentaje >= 50 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' :
+                            'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                          }`}>
+                            {item.porcentaje >= 90 ? 'Cumplida' : item.porcentaje >= 50 ? 'En Proceso' : 'Pendiente'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+                <tfoot className="bg-gray-100 dark:bg-gray-900">
+                  <tr className="font-bold">
+                    <td colSpan={3} className="px-3 py-4 text-sm text-gray-900 dark:text-white">
+                      TOTAL ({totalMetas} metas)
+                    </td>
+                    <td className="px-3 py-4 text-sm text-right text-gray-900 dark:text-white">
+                      {formatNumber(datosTabla.reduce((sum, i) => sum + i.planificadas, 0), 1)}
+                    </td>
+                    <td className="px-3 py-4 text-sm text-right text-blue-600 dark:text-blue-400 font-medium">
+                      {formatNumber(datosTabla.reduce((sum, i) => sum + i.ejecutadas, 0), 1)}
+                    </td>
+                    <td className="px-3 py-4 text-sm text-center text-gray-900 dark:text-white">
+                      {formatPercent(porcentajePromedioTabla)}
+                    </td>
+                    <td colSpan={2}></td>
+                  </tr>
+                </tfoot>
+              </table>
+            ) : (
+              /* Tabla agregada para ejes, programas o subprogramas */
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-900">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      {getNivelLabel()}
+                    </th>
+                    <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Metas Producto
+                    </th>
+                    <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      % Cumplimiento
+                    </th>
+                    <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Estado
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  {datosTabla.map((item, index) => (
+                    <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white max-w-xs wrap-break-word" title={item.nombre}>
+                        {item.nombre}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300 text-center">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
+                          {item.metas}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          item.porcentaje >= 90 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                          item.porcentaje >= 70 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                          item.porcentaje >= 50 ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' :
+                          'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                        }`}>
+                          {formatPercent(item.porcentaje)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                          item.porcentaje >= 90 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' :
+                          item.porcentaje >= 50 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' :
+                          'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                        }`}>
+                          {item.porcentaje >= 90 ? 'Cumplida' : item.porcentaje >= 50 ? 'En Proceso' : 'Pendiente'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot className="bg-gray-100 dark:bg-gray-900">
+                  <tr className="font-bold">
+                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                      TOTAL
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-white text-center">
+                      {totalMetas}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-white text-center">
+                      {formatPercent(porcentajePromedioTabla)}
+                    </td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              </table>
+            )}
+            </div>
+          </div>
+        </div>
       </div>
     </>
   );

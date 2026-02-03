@@ -85,6 +85,10 @@ const EjecucionPresupuestal = () => {
   // Filtros jerárquicos
   const [ejeSeleccionado, setEjeSeleccionado] = useState<string>('todos');
   const [programaSeleccionado, setProgramaSeleccionado] = useState<string>('todos');
+  
+  // Nivel de visualización de la tabla
+  type NivelVisualizacion = 'eje' | 'programa' | 'meta';
+  const [nivelTabla, setNivelTabla] = useState<NivelVisualizacion>('programa');
 
   useEffect(() => {
     cargarDatos();
@@ -219,6 +223,58 @@ const EjecucionPresupuestal = () => {
     datosPorEje.forEach(e => {
       e.porcentaje = calculatePercentage(e.compromisos, e.apropiacionDefinitiva);
     });
+    
+    // Ordenar ejes numéricamente (Eje 1, Eje 2, Eje 3, etc.)
+    datosPorEje.sort((a, b) => {
+      const numA = parseInt(a.nombre.replace(/\D/g, '')) || 999;
+      const numB = parseInt(b.nombre.replace(/\D/g, '')) || 999;
+      return numA - numB;
+    });
+    
+    // Ordenar programas alfabéticamente
+    datosPorPrograma.sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+    // Datos por meta individual
+    interface DatosMeta {
+      codigoMeta: string;
+      nombre: string;
+      responsable: string;
+      apropiacionInicial: number;
+      apropiacionDefinitiva: number;
+      compromisos: number;
+      pagos: number;
+      porcentajeEjecucion: number;
+      saldo: number;
+    }
+    
+    const datosPorMeta: DatosMeta[] = metasFiltradas.map((meta: MetaProducto) => {
+      const apropiacionInicial = parseNumber(meta[apropiacionInicialKey]);
+      const apropiacionDefinitiva = parseNumber(meta[apropiacionDefinitivaKey]);
+      const compromisos = parseNumber(meta[compromisosKey]);
+      const pagos = parseNumber(meta[pagosKey]);
+      
+      return {
+        codigoMeta: meta.codigoMeta || '-',
+        nombre: meta.meta || meta.metaResultado || meta.proyecto || 'Sin descripción',
+        responsable: meta.responsable || '-',
+        apropiacionInicial,
+        apropiacionDefinitiva,
+        compromisos,
+        pagos,
+        porcentajeEjecucion: calculatePercentage(compromisos, apropiacionDefinitiva),
+        saldo: apropiacionDefinitiva - compromisos
+      };
+    });
+    
+    // Ordenar metas por porcentaje de ejecución descendente
+    datosPorMeta.sort((a, b) => b.porcentajeEjecucion - a.porcentajeEjecucion);
+
+    // Calcular promedio ponderado de ejecución para la tabla
+    const calcularPromedioEjecucion = (datos: { porcentajeEjecucion?: number; porcentaje?: number; metas?: number }[]) => {
+      const totalMetas = datos.reduce((sum, item) => sum + (item.metas || 1), 0);
+      const sumaPonderada = datos.reduce((sum, item) => sum + ((item.porcentajeEjecucion || item.porcentaje || 0) * (item.metas || 1)), 0);
+      return totalMetas > 0 ? sumaPonderada / totalMetas : 0;
+    };
 
     return {
       kpis: {
@@ -232,6 +288,10 @@ const EjecucionPresupuestal = () => {
       },
       porPrograma: datosPorPrograma,
       porEje: datosPorEje,
+      porMeta: datosPorMeta,
+      promedioEjecucionEjes: calcularPromedioEjecucion(datosPorEje),
+      promedioEjecucionProgramas: calcularPromedioEjecucion(datosPorPrograma),
+      promedioEjecucionMetas: calcularPromedioEjecucion(datosPorMeta.map(m => ({ porcentajeEjecucion: m.porcentajeEjecucion, metas: 1 }))),
     };
   }, [metasFiltradas, añoSeleccionado]);
 
@@ -271,8 +331,26 @@ const EjecucionPresupuestal = () => {
   if (error) return <ErrorMessage message={error} onRetry={cargarDatos} />;
   if (!datosFinancieros) return <ErrorMessage message="No hay datos disponibles" />;
 
-  const { kpis, porPrograma, porEje } = datosFinancieros;
-  const top10Programas = porPrograma.slice(0, 10);
+  const { kpis, porPrograma, porEje, porMeta, promedioEjecucionEjes, promedioEjecucionProgramas, promedioEjecucionMetas } = datosFinancieros;
+  const top10Programas = [...porPrograma].sort((a, b) => b.apropiacionDefinitiva - a.apropiacionDefinitiva).slice(0, 10);
+  
+  const getNivelLabel = () => {
+    switch (nivelTabla) {
+      case 'eje': return 'Eje del PDM';
+      case 'programa': return 'Programa PDT';
+      case 'meta': return 'Meta de Producto';
+      default: return 'Item';
+    }
+  };
+  
+  const getPromedioActual = () => {
+    switch (nivelTabla) {
+      case 'eje': return promedioEjecucionEjes;
+      case 'programa': return promedioEjecucionProgramas;
+      case 'meta': return promedioEjecucionMetas;
+      default: return kpis.porcentajeEjecucion;
+    }
+  };
 
   return (
     <>
@@ -536,10 +614,255 @@ const EjecucionPresupuestal = () => {
           </ComponentCard>
         </div>
 
-        {/* Tabla Detallada */}
-        <ComponentCard title={`Detalle por Programa PDT - ${añoSeleccionado} (COP)`}>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        {/* Tabla Detallada con selector de vista */}
+        <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900/50">
+          {/* Header con selector de vista */}
+          <div className="px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 className="text-base font-medium text-gray-800 dark:text-white/90">
+              Detalle por {getNivelLabel()} - {añoSeleccionado} (COP)
+            </h3>
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                onClick={() => setNivelTabla('eje')}
+                className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  nivelTabla === 'eje'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                Por Eje
+              </button>
+              <button
+                onClick={() => setNivelTabla('programa')}
+                className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  nivelTabla === 'programa'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                Por Programa
+              </button>
+              <button
+                onClick={() => setNivelTabla('meta')}
+                className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  nivelTabla === 'meta'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                🎯 Por Meta
+              </button>
+            </div>
+          </div>
+
+          {/* Body */}
+          <div className="px-6 py-6">
+            <div className="overflow-x-auto">
+              {nivelTabla === 'meta' ? (
+                /* Tabla detallada por Meta */
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-900">
+                    <tr>
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Código
+                      </th>
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Meta de Producto
+                      </th>
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Responsable
+                      </th>
+                      <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Aprop. Inicial
+                      </th>
+                      <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Aprop. Definitiva
+                      </th>
+                      <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Compromisos
+                      </th>
+                      <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Pagos
+                      </th>
+                      <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        % Ejecución
+                      </th>
+                      <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Saldo
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    {porMeta.length === 0 ? (
+                      <tr>
+                        <td colSpan={9} className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                          No hay metas disponibles para mostrar
+                        </td>
+                      </tr>
+                    ) : (
+                      porMeta.map((meta, index) => (
+                        <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                          <td className="px-3 py-3 whitespace-nowrap text-sm font-mono font-medium text-blue-600 dark:text-blue-400">
+                            {meta.codigoMeta}
+                          </td>
+                          <td className="px-3 py-3 text-sm text-gray-900 dark:text-white">
+                            <div className="max-w-xs truncate" title={meta.nombre}>
+                              {meta.nombre}
+                            </div>
+                          </td>
+                          <td className="px-3 py-3 text-sm text-gray-700 dark:text-gray-300">
+                            <div className="max-w-36 truncate" title={meta.responsable}>
+                              {meta.responsable}
+                            </div>
+                          </td>
+                          <td className="px-3 py-3 whitespace-nowrap text-sm text-right text-gray-700 dark:text-gray-300">
+                            {formatCurrency(meta.apropiacionInicial)}
+                          </td>
+                          <td className="px-3 py-3 whitespace-nowrap text-sm text-right font-medium text-gray-900 dark:text-white">
+                            {formatCurrency(meta.apropiacionDefinitiva)}
+                          </td>
+                          <td className="px-3 py-3 whitespace-nowrap text-sm text-right text-blue-600 dark:text-blue-400">
+                            {formatCurrency(meta.compromisos)}
+                          </td>
+                          <td className="px-3 py-3 whitespace-nowrap text-sm text-right text-green-600 dark:text-green-400">
+                            {formatCurrency(meta.pagos)}
+                          </td>
+                          <td className="px-3 py-3 whitespace-nowrap text-center">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              meta.porcentajeEjecucion >= 90 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                              meta.porcentajeEjecucion >= 70 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                              meta.porcentajeEjecucion >= 50 ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' :
+                              'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                            }`}>
+                              {formatPercent(meta.porcentajeEjecucion)}
+                            </span>
+                          </td>
+                          <td className="px-3 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-400">
+                            {formatCurrency(meta.saldo)}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                  <tfoot className="bg-gray-100 dark:bg-gray-900">
+                    <tr className="font-bold">
+                      <td colSpan={3} className="px-3 py-4 text-sm text-gray-900 dark:text-white">
+                        TOTAL ({kpis.totalMetas} metas)
+                      </td>
+                      <td className="px-3 py-4 text-sm text-right text-gray-900 dark:text-white">
+                        {formatCurrency(kpis.totalApropiacionInicial)}
+                      </td>
+                      <td className="px-3 py-4 text-sm text-right text-gray-900 dark:text-white">
+                        {formatCurrency(kpis.totalApropiacionDefinitiva)}
+                      </td>
+                      <td className="px-3 py-4 text-sm text-right text-blue-600 dark:text-blue-400">
+                        {formatCurrency(kpis.totalCompromisos)}
+                      </td>
+                      <td className="px-3 py-4 text-sm text-right text-green-600 dark:text-green-400">
+                        {formatCurrency(kpis.totalPagos)}
+                      </td>
+                      <td className="px-3 py-4 text-sm text-center text-gray-900 dark:text-white">
+                        {formatPercent(getPromedioActual())}
+                      </td>
+                      <td className="px-3 py-4 text-sm text-right text-gray-900 dark:text-white">
+                        {formatCurrency(kpis.saldoDisponible)}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              ) : nivelTabla === 'eje' ? (
+                /* Tabla por Eje */
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-900">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Eje del PDM
+                      </th>
+                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Metas
+                      </th>
+                      <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Aprop. Inicial
+                      </th>
+                      <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Aprop. Definitiva
+                      </th>
+                      <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Compromisos
+                      </th>
+                      <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        % Ejecución
+                      </th>
+                      <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Saldo
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    {porEje.map((eje, index) => (
+                      <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                          {eje.nombre}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
+                            {eje.metas}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-700 dark:text-gray-300">
+                          {formatCurrency(eje.apropiacionInicial)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900 dark:text-white">
+                          {formatCurrency(eje.apropiacionDefinitiva)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-blue-600 dark:text-blue-400">
+                          {formatCurrency(eje.compromisos)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            eje.porcentaje >= 90 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                            eje.porcentaje >= 70 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                            eje.porcentaje >= 50 ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' :
+                            'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                          }`}>
+                            {formatPercent(eje.porcentaje)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-400">
+                          {formatCurrency(eje.apropiacionDefinitiva - eje.compromisos)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot className="bg-gray-100 dark:bg-gray-900">
+                    <tr className="font-bold">
+                      <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                        TOTAL
+                      </td>
+                      <td className="px-6 py-4 text-sm text-center text-gray-900 dark:text-white">
+                        {kpis.totalMetas}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-right text-gray-900 dark:text-white">
+                        {formatCurrency(kpis.totalApropiacionInicial)}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-right text-gray-900 dark:text-white">
+                        {formatCurrency(kpis.totalApropiacionDefinitiva)}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-right text-blue-600 dark:text-blue-400">
+                        {formatCurrency(kpis.totalCompromisos)}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-center text-gray-900 dark:text-white">
+                        {formatPercent(getPromedioActual())}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-right text-gray-900 dark:text-white">
+                        {formatCurrency(kpis.saldoDisponible)}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              ) : (
+                /* Tabla por Programa */
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -628,16 +951,18 @@ const EjecucionPresupuestal = () => {
                     {formatCurrency(kpis.totalPagos)}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900 dark:text-white text-right">
-                    {formatPercent(kpis.porcentajeEjecucion)}
+                    {formatPercent(getPromedioActual())}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900 dark:text-white text-right">
                     {formatCurrency(kpis.saldoDisponible)}
                   </td>
                 </tr>
               </tfoot>
-            </table>
+                </table>
+              )}
+            </div>
           </div>
-        </ComponentCard>
+        </div>
       </div>
     </>
   );
