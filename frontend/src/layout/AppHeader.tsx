@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { useSidebar } from "../context/SidebarContext";
 import { ThemeToggleButton } from "../components/common/ThemeToggleButton";
+import { WhatsAppButton } from "../components/WhatsAppButton";
 // import NotificationDropdown from "../components/header/NotificationDropdown";
 // import UserDropdown from "../components/header/UserDropdown"; // Comentado: No se usa por ahora
 import escudoTenjo from "../assets/brand/ESCUDO2024.png";
@@ -137,6 +138,7 @@ const AppHeader: React.FC = () => {
           } items-center justify-between w-full gap-4 px-5 py-4 lg:flex bg-white/10 lg:justify-end lg:px-0 lg:bg-transparent lg:w-1/4`}
         >
           <div className="flex items-center gap-2 2xsm:gap-3">
+            <WhatsAppButton />
             {/* <!-- Dark Mode Toggler --> */}
             <ThemeToggleButton />
             {/* <!-- Dark Mode Toggler --> */}
