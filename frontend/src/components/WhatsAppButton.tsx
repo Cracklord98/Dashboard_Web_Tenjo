@@ -2,7 +2,7 @@ import React from 'react';
 
 export const WhatsAppButton: React.FC = () => {
   // Reemplaza con el número que te solicitaron (incluye el código de país, ej: 57 para Colombia)
-  const phoneNumber = "573000000000";
+  const phoneNumber = "573027786073";
   
   // Mensaje opcional predeterminado
   const message = "Hola, tengo una consulta sobre el Dashboard del Plan de Desarrollo de Tenjo.";
