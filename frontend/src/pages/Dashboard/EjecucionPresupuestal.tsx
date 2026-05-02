@@ -78,7 +78,7 @@ const EjecucionPresupuestal = () => {
   const [metas, setMetas] = useState<MetaProducto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [añoSeleccionado, setAñoSeleccionado] = useState<'2024' | '2025'>('2025');
+  const [añoSeleccionado, setAñoSeleccionado] = useState<'2024' | '2025' | '2026'>('2026');
   const [ultimaActualizacion, setUltimaActualizacion] = useState<Date | null>(null);
   const [mostrarNotificacion, setMostrarNotificacion] = useState(false);
   
@@ -147,10 +147,10 @@ const EjecucionPresupuestal = () => {
     if (!metasFiltradas.length) return null;
 
     // KPIs generales del año seleccionado
-    const apropiacionInicialKey = (añoSeleccionado === '2025' ? 'apropiacionInicial2025' : 'apropiacion2024') as keyof MetaProducto;
-    const apropiacionDefinitivaKey = (añoSeleccionado === '2025' ? 'apropiacionDefinitiva2025' : 'apropiacion2024') as keyof MetaProducto;
-    const compromisosKey = (añoSeleccionado === '2025' ? 'compromisos2025' : 'compromisos2024') as keyof MetaProducto;
-    const pagosKey = (añoSeleccionado === '2025' ? 'pagos2025' : 'pagos2024') as keyof MetaProducto;
+    const apropiacionInicialKey = (añoSeleccionado === '2026' ? 'apropiacionInicial2026' : (añoSeleccionado === '2025' ? 'apropiacionInicial2025' : 'apropiacion2024')) as keyof MetaProducto;
+    const apropiacionDefinitivaKey = (añoSeleccionado === '2026' ? 'apropiacionDefinitiva2026' : (añoSeleccionado === '2025' ? 'apropiacionDefinitiva2025' : 'apropiacion2024')) as keyof MetaProducto;
+    const compromisosKey = (añoSeleccionado === '2026' ? 'compromisos2026' : (añoSeleccionado === '2025' ? 'compromisos2025' : 'compromisos2024')) as keyof MetaProducto;
+    const pagosKey = (añoSeleccionado === '2026' ? 'pagos2026' : (añoSeleccionado === '2025' ? 'pagos2025' : 'pagos2024')) as keyof MetaProducto;
 
     const totalApropiacionInicial = metasFiltradas.reduce((sum, m: MetaProducto) => sum + parseNumber(m[apropiacionInicialKey]), 0);
     const totalApropiacionDefinitiva = metasFiltradas.reduce((sum, m: MetaProducto) => sum + parseNumber(m[apropiacionDefinitivaKey]), 0);
@@ -309,6 +309,11 @@ const EjecucionPresupuestal = () => {
       compromisos: acc.compromisos + parseNumber(m.compromisos2025),
     }), { apropiacion: 0, compromisos: 0 });
 
+    const datos2026 = metasFiltradas.reduce((acc: { apropiacion: number; compromisos: number }, m: MetaProducto) => ({
+      apropiacion: acc.apropiacion + parseNumber(m.apropiacionDefinitiva2026),
+      compromisos: acc.compromisos + parseNumber(m.compromisos2026),
+    }), { apropiacion: 0, compromisos: 0 });
+
     return [
       {
         anio: '2024',
@@ -321,6 +326,12 @@ const EjecucionPresupuestal = () => {
         apropiacion: datos2025.apropiacion,
         compromisos: datos2025.compromisos,
         porcentaje: calculatePercentage(datos2025.compromisos, datos2025.apropiacion),
+      },
+      {
+        anio: '2026',
+        apropiacion: datos2026.apropiacion,
+        compromisos: datos2026.compromisos,
+        porcentaje: calculatePercentage(datos2026.compromisos, datos2026.apropiacion),
       },
     ];
   }, [metasFiltradas]);
@@ -412,11 +423,12 @@ const EjecucionPresupuestal = () => {
                 </label>
                 <select
                   value={añoSeleccionado}
-                  onChange={(e) => setAñoSeleccionado(e.target.value as '2024' | '2025')}
+                  onChange={(e) => setAñoSeleccionado(e.target.value as '2024' | '2025' | '2026')}
                   className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 font-medium"
                 >
                   <option value="2024">2024</option>
                   <option value="2025">2025</option>
+                  <option value="2026">2026</option>
                 </select>
               </div>
 
@@ -553,7 +565,7 @@ const EjecucionPresupuestal = () => {
         </div>
 
         {/* Comparación Anual */}
-        <ComponentCard title="Comparación 2024 vs 2025 (COP)">
+        <ComponentCard title="Comparación 2024 vs 2025 vs 2026 (COP)">
           <ResponsiveContainer width="100%" height={350}>
             <BarChart data={comparacionAnual}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />

@@ -14,7 +14,7 @@ const MetasProductoPage = () => {
   const [error, setError] = useState<string | null>(null);
   
   // Filtros
-  const [añoSeleccionado, setAñoSeleccionado] = useState<'2024' | '2025'>('2025');
+  const [añoSeleccionado, setAñoSeleccionado] = useState<'2024' | '2025' | '2026'>('2026');
   const [ejeSeleccionado, setEjeSeleccionado] = useState<string>('todos');
   const [programaSeleccionado, setProgramaSeleccionado] = useState<string>('todos');
   const [secretariaSeleccionada, setSecretariaSeleccionada] = useState<string>('todos');
@@ -127,22 +127,22 @@ const MetasProductoPage = () => {
   const totalMetas = metasFiltradas.length;
   
   const metasAltoAvance = metasFiltradas.filter(m => {
-    const planeado = parseNumber(añoSeleccionado === '2024' ? m.totalPlaneado2024 : m.totalPlaneado2025);
-    const ejecutado = parseNumber(añoSeleccionado === '2024' ? m.totalEjecutado2024 : m.totalEjecutado2025);
+    const planeado = parseNumber(añoSeleccionado === '2026' ? m.totalPlaneado2026 : (añoSeleccionado === '2025' ? m.totalPlaneado2025 : m.totalPlaneado2024));
+    const ejecutado = parseNumber(añoSeleccionado === '2026' ? m.totalEjecutado2026 : (añoSeleccionado === '2025' ? m.totalEjecutado2025 : m.totalEjecutado2024));
     const porcentaje = calculatePercentage(ejecutado, planeado);
     return porcentaje >= 90;
   }).length;
   
   const metasMedioAvance = metasFiltradas.filter(m => {
-    const planeado = parseNumber(añoSeleccionado === '2024' ? m.totalPlaneado2024 : m.totalPlaneado2025);
-    const ejecutado = parseNumber(añoSeleccionado === '2024' ? m.totalEjecutado2024 : m.totalEjecutado2025);
+    const planeado = parseNumber(añoSeleccionado === '2026' ? m.totalPlaneado2026 : (añoSeleccionado === '2025' ? m.totalPlaneado2025 : m.totalPlaneado2024));
+    const ejecutado = parseNumber(añoSeleccionado === '2026' ? m.totalEjecutado2026 : (añoSeleccionado === '2025' ? m.totalEjecutado2025 : m.totalEjecutado2024));
     const porcentaje = calculatePercentage(ejecutado, planeado);
     return porcentaje >= 50 && porcentaje < 90;
   }).length;
   
   const metasBajoAvance = metasFiltradas.filter(m => {
-    const planeado = parseNumber(añoSeleccionado === '2024' ? m.totalPlaneado2024 : m.totalPlaneado2025);
-    const ejecutado = parseNumber(añoSeleccionado === '2024' ? m.totalEjecutado2024 : m.totalEjecutado2025);
+    const planeado = parseNumber(añoSeleccionado === '2026' ? m.totalPlaneado2026 : (añoSeleccionado === '2025' ? m.totalPlaneado2025 : m.totalPlaneado2024));
+    const ejecutado = parseNumber(añoSeleccionado === '2026' ? m.totalEjecutado2026 : (añoSeleccionado === '2025' ? m.totalEjecutado2025 : m.totalEjecutado2024));
     const porcentaje = calculatePercentage(ejecutado, planeado);
     return porcentaje < 50;
   }).length;
@@ -259,11 +259,12 @@ const MetasProductoPage = () => {
               </label>
               <select
                 value={añoSeleccionado}
-                onChange={(e) => setAñoSeleccionado(e.target.value as '2024' | '2025')}
+                onChange={(e) => setAñoSeleccionado(e.target.value as '2024' | '2025' | '2026')}
                 className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
               >
                 <option value="2024">2024</option>
                 <option value="2025">2025</option>
+                <option value="2026">2026</option>
               </select>
             </div>
 
@@ -427,8 +428,8 @@ const MetasProductoPage = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {metasFiltradas.map((meta) => {
-                const planeado = parseNumber(añoSeleccionado === '2024' ? meta.totalPlaneado2024 : meta.totalPlaneado2025);
-                const ejecutado = parseNumber(añoSeleccionado === '2024' ? meta.totalEjecutado2024 : meta.totalEjecutado2025);
+                const planeado = parseNumber(añoSeleccionado === '2026' ? meta.totalPlaneado2026 : (añoSeleccionado === '2025' ? meta.totalPlaneado2025 : meta.totalPlaneado2024));
+                const ejecutado = parseNumber(añoSeleccionado === '2026' ? meta.totalEjecutado2026 : (añoSeleccionado === '2025' ? meta.totalEjecutado2025 : meta.totalEjecutado2024));
                 const porcentaje = calculatePercentage(ejecutado, planeado);
 
                 return (

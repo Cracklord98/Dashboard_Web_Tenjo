@@ -53,7 +53,7 @@ const EjecucionFisica = () => {
   const [metas, setMetas] = useState<MetaProducto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [añoSeleccionado, setAñoSeleccionado] = useState<'2024' | '2025'>('2025');
+  const [añoSeleccionado, setAñoSeleccionado] = useState<'2024' | '2025' | '2026'>('2026');
   
   // Filtros jerárquicos
   const [ejeSeleccionado, setEjeSeleccionado] = useState<string>('todos');
@@ -116,10 +116,10 @@ const EjecucionFisica = () => {
   const datosFisicos = useMemo(() => {
     if (!metasFiltradas.length) return null;
 
-    const planeadoKey = añoSeleccionado === '2025' ? 'totalPlaneado2025' : 'totalPlaneado2024';
-    const ejecutadoKey = añoSeleccionado === '2025' ? 'totalEjecutado2025' : 'totalEjecutado2024';
-    const estadoKey = añoSeleccionado === '2025' ? 'estadoProgramado2025' : 'estadoProgramado2024';
-    const porcentajeAvanceKey = añoSeleccionado === '2025' ? 'porcentajeAvance2025' : 'porcentajeAvance2024';
+    const planeadoKey = añoSeleccionado === '2026' ? 'totalPlaneado2026' : (añoSeleccionado === '2025' ? 'totalPlaneado2025' : 'totalPlaneado2024');
+    const ejecutadoKey = añoSeleccionado === '2026' ? 'totalEjecutado2026' : (añoSeleccionado === '2025' ? 'totalEjecutado2025' : 'totalEjecutado2024');
+    const estadoKey = añoSeleccionado === '2026' ? 'estadoProgramado2026' : (añoSeleccionado === '2025' ? 'estadoProgramado2025' : 'estadoProgramado2024');
+    const porcentajeAvanceKey = añoSeleccionado === '2026' ? 'porcentajeAvance2026' : (añoSeleccionado === '2025' ? 'porcentajeAvance2025' : 'porcentajeAvance2024');
 
     // KPIs generales
     const totalPlanificadas = metasFiltradas.reduce((sum, m) => sum + parseNumber(m[planeadoKey]), 0);
@@ -403,11 +403,12 @@ const EjecucionFisica = () => {
                 </label>
                 <select
                   value={añoSeleccionado}
-                  onChange={(e) => setAñoSeleccionado(e.target.value as '2024' | '2025')}
+                  onChange={(e) => setAñoSeleccionado(e.target.value as '2024' | '2025' | '2026')}
                   className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 font-medium"
                 >
                   <option value="2024">2024</option>
                   <option value="2025">2025</option>
+                  <option value="2026">2026</option>
                 </select>
               </div>
 

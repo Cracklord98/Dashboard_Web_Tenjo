@@ -16,15 +16,19 @@ export interface MetaProducto {
   responsable: string;
   avance2024: number;
   avance2025: number;
+  avance2026?: number;
   // Estados programado/no programado
   estadoProgramado2024?: string;
   estadoProgramado2025?: string;
+  estadoProgramado2026?: string;
   // Porcentajes de avance
   porcentajeAvance2024?: number | string;
   porcentajeAvance2025?: number | string;
+  porcentajeAvance2026?: number | string;
   porcentajeAvanceCuatrienio?: number | string;
   soportes2024?: string;
   soportes2025?: string;
+  soportes2026?: string;
   
   // Campos financieros 2024
   apropiacion2024?: number | string;
@@ -41,11 +45,20 @@ export interface MetaProducto {
   pagos2025?: number | string;
   ejecucion2025?: number | string;
   
+  // Campos financieros 2026
+  apropiacionInicial2026?: number | string;
+  apropiacionDefinitiva2026?: number | string;
+  compromisos2026?: number | string;
+  pagos2026?: number | string;
+  ejecucion2026?: number | string;
+  
   // Campos de planificación y ejecución física
   totalPlaneado2024?: number | string;
   totalEjecutado2024?: number | string;
   totalPlaneado2025?: number | string;
   totalEjecutado2025?: number | string;
+  totalPlaneado2026?: number | string;
+  totalEjecutado2026?: number | string;
   
   // Trimestres 2024
   t1Planeado2024?: number | string;
@@ -66,6 +79,16 @@ export interface MetaProducto {
   t3Ejecutado2025?: number | string;
   t4Planeado2025?: number | string;
   t4Ejecutado2025?: number | string;
+  
+  // Trimestres 2026
+  t1Planeado2026?: number | string;
+  t1Ejecutado2026?: number | string;
+  t2Planeado2026?: number | string;
+  t2Ejecutado2026?: number | string;
+  t3Planeado2026?: number | string;
+  t3Ejecutado2026?: number | string;
+  t4Planeado2026?: number | string;
+  t4Ejecutado2026?: number | string;
   
   // Indicadores
   lineaBase?: string;

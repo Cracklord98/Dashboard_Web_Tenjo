@@ -608,7 +608,211 @@ const MetaDetallePage = () => {
           </div>
         </div>
 
-        {/* ========== SECCIÓN 4: SOPORTES Y EVIDENCIAS ========== */}
+        {/* ========== SECCIÓN 4: EJECUCIÓN 2026 CON TRIMESTRES ========== */}
+        <div className="bg-linear-to-br from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 rounded-xl p-6 border border-cyan-200 dark:border-cyan-800">
+          <h4 className="text-lg font-bold text-cyan-900 dark:text-cyan-100 mb-4 flex items-center gap-2">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+            Ejecución Física 2026
+          </h4>
+
+          {/* Resumen 2026 */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-3 text-center">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Total Programado</p>
+              <p className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                {parseNumber(meta.totalPlaneado2026).toFixed(0)}
+              </p>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-3 text-center">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Ejecutado</p>
+              <p className="text-xl font-bold text-cyan-600 dark:text-cyan-400">
+                {parseNumber(meta.totalEjecutado2026).toFixed(0)}
+              </p>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-3 text-center">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">% Avance</p>
+              <p className={`text-xl font-bold ${getColorPorcentaje(calculatePercentage(
+                parseNumber(meta.totalEjecutado2026),
+                parseNumber(meta.totalPlaneado2026)
+              ))}`}>
+                {formatPercent(calculatePercentage(
+                  parseNumber(meta.totalEjecutado2026),
+                  parseNumber(meta.totalPlaneado2026)
+                ))}
+              </p>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-3 text-center">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Estado</p>
+              <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${
+                meta.estado === 'PROGRAMADO' || meta.estado === 'Programado'
+                  ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
+                  : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300'
+              }`}>
+                {meta.estado || 'N/A'}
+              </span>
+            </div>
+          </div>
+
+          {/* Barra de Progreso 2026 */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Progreso 2026</span>
+              <span className={`text-sm font-bold ${getColorPorcentaje(calculatePercentage(
+                parseNumber(meta.totalEjecutado2026),
+                parseNumber(meta.totalPlaneado2026)
+              ))}`}>
+                {formatPercent(calculatePercentage(
+                  parseNumber(meta.totalEjecutado2026),
+                  parseNumber(meta.totalPlaneado2026)
+                ))}
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+              <div
+                className={`h-3 rounded-full transition-all ${getColorBarra(calculatePercentage(
+                  parseNumber(meta.totalEjecutado2026),
+                  parseNumber(meta.totalPlaneado2026)
+                ))}`}
+                style={{ width: `${Math.min(calculatePercentage(
+                  parseNumber(meta.totalEjecutado2026),
+                  parseNumber(meta.totalPlaneado2026)
+                ), 100)}%` }}
+              ></div>
+            </div>
+          </div>
+
+          {/* Detalle por Trimestres 2026 */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
+            <h5 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Avance por Trimestre
+            </h5>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+              {/* T1 2026 */}
+              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 border-l-4 border-blue-500">
+                <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-2">T1 2026</p>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-600 dark:text-gray-400">Programado:</span>
+                    <span className="font-semibold text-gray-900 dark:text-white">{parseTrimestreValue(meta.t1Planeado2026).toFixed(0)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-600 dark:text-gray-400">Ejecutado:</span>
+                    <span className="font-semibold text-cyan-600 dark:text-cyan-400">{parseTrimestreValue(meta.t1Ejecutado2026).toFixed(0)}</span>
+                  </div>
+                  <div className="mt-2 pt-2 border-t border-blue-200 dark:border-blue-700">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-600 dark:text-gray-400">% Avance:</span>
+                      <span className={`font-bold ${getColorPorcentaje(calculatePercentage(
+                        parseTrimestreValue(meta.t1Ejecutado2026),
+                        parseTrimestreValue(meta.t1Planeado2026)
+                      ))}`}>
+                        {formatPercent(calculatePercentage(
+                          parseTrimestreValue(meta.t1Ejecutado2026),
+                          parseTrimestreValue(meta.t1Planeado2026)
+                        ))}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* T2 2026 */}
+              <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 border-l-4 border-green-500">
+                <p className="text-xs font-semibold text-green-700 dark:text-green-300 mb-2">T2 2026</p>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-600 dark:text-gray-400">Programado:</span>
+                    <span className="font-semibold text-gray-900 dark:text-white">{parseTrimestreValue(meta.t2Planeado2026).toFixed(0)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-600 dark:text-gray-400">Ejecutado:</span>
+                    <span className="font-semibold text-cyan-600 dark:text-cyan-400">{parseTrimestreValue(meta.t2Ejecutado2026).toFixed(0)}</span>
+                  </div>
+                  <div className="mt-2 pt-2 border-t border-green-200 dark:border-green-700">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-600 dark:text-gray-400">% Avance:</span>
+                      <span className={`font-bold ${getColorPorcentaje(calculatePercentage(
+                        parseTrimestreValue(meta.t2Ejecutado2026),
+                        parseTrimestreValue(meta.t2Planeado2026)
+                      ))}`}>
+                        {formatPercent(calculatePercentage(
+                          parseTrimestreValue(meta.t2Ejecutado2026),
+                          parseTrimestreValue(meta.t2Planeado2026)
+                        ))}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* T3 2026 */}
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-3 border-l-4 border-yellow-500">
+                <p className="text-xs font-semibold text-yellow-700 dark:text-yellow-300 mb-2">T3 2026</p>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-600 dark:text-gray-400">Programado:</span>
+                    <span className="font-semibold text-gray-900 dark:text-white">{parseTrimestreValue(meta.t3Planeado2026).toFixed(0)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-600 dark:text-gray-400">Ejecutado:</span>
+                    <span className="font-semibold text-cyan-600 dark:text-cyan-400">{parseTrimestreValue(meta.t3Ejecutado2026).toFixed(0)}</span>
+                  </div>
+                  <div className="mt-2 pt-2 border-t border-yellow-200 dark:border-yellow-700">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-600 dark:text-gray-400">% Avance:</span>
+                      <span className={`font-bold ${getColorPorcentaje(calculatePercentage(
+                        parseTrimestreValue(meta.t3Ejecutado2026),
+                        parseTrimestreValue(meta.t3Planeado2026)
+                      ))}`}>
+                        {formatPercent(calculatePercentage(
+                          parseTrimestreValue(meta.t3Ejecutado2026),
+                          parseTrimestreValue(meta.t3Planeado2026)
+                        ))}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* T4 2026 */}
+              <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-3 border-l-4 border-red-500">
+                <p className="text-xs font-semibold text-red-700 dark:text-red-300 mb-2">T4 2026</p>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-600 dark:text-gray-400">Programado:</span>
+                    <span className="font-semibold text-gray-900 dark:text-white">{parseTrimestreValue(meta.t4Planeado2026).toFixed(0)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-600 dark:text-gray-400">Ejecutado:</span>
+                    <span className="font-semibold text-cyan-600 dark:text-cyan-400">{parseTrimestreValue(meta.t4Ejecutado2026).toFixed(0)}</span>
+                  </div>
+                  <div className="mt-2 pt-2 border-t border-red-200 dark:border-red-700">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-600 dark:text-gray-400">% Avance:</span>
+                      <span className={`font-bold ${getColorPorcentaje(calculatePercentage(
+                        parseTrimestreValue(meta.t4Ejecutado2026),
+                        parseTrimestreValue(meta.t4Planeado2026)
+                      ))}`}>
+                        {formatPercent(calculatePercentage(
+                          parseTrimestreValue(meta.t4Ejecutado2026),
+                          parseTrimestreValue(meta.t4Planeado2026)
+                        ))}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ========== SECCIÓN 5: SOPORTES Y EVIDENCIAS ========== */}
         <div className="bg-linear-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl p-6 border border-amber-200 dark:border-amber-800">
           <h4 className="text-lg font-bold text-amber-900 dark:text-amber-100 mb-4 flex items-center gap-2">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -617,7 +821,7 @@ const MetaDetallePage = () => {
             Soportes y Evidencias
           </h4>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Soportes 2024 */}
             <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
@@ -659,6 +863,33 @@ const MetaDetallePage = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                  Ver Evidencias
+                </a>
+              ) : (
+                <div className="text-center py-4 text-sm text-gray-500 dark:text-gray-400">
+                  Sin soportes registrados
+                </div>
+              )}
+            </div>
+
+            {/* Soportes 2026 */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">📄 Soportes 2026</p>
+                <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs font-semibold rounded-full">
+                  2026
+                </span>
+              </div>
+              {meta.soportes2026 ? (
+                <a
+                  href={meta.soportes2026}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />

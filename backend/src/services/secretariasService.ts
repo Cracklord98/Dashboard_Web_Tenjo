@@ -10,7 +10,13 @@ export interface Secretaria {
   apropiacionDefinitiva2025: number;
   compromisos2025: number;
   pagos2025: number;
+  metasProgramadas2026?: number;
+  apropiacionInicial2026?: number;
+  apropiacionDefinitiva2026?: number;
+  compromisos2026?: number;
+  pagos2026?: number;
   porcentajeEjecucion: number;
+  porcentajeEjecucion2026?: number;
 }
 
 export class SecretariasService {
@@ -51,6 +57,14 @@ export class SecretariasService {
               porcentajeEjecucion = (compromisos / apropiacionDefinitiva) * 100;
             }
             
+            // Datos 2026
+            const apropiacionDefinitiva2026 = this.parseNumber(row['APROPIACION DEFINITIVA 2026']);
+            const compromisos2026 = this.parseNumber(row['COMPROMISOS 2026']);
+            let porcentajeEjecucion2026 = this.parseNumber(row['% EJECUCIÓN PPTO 2026']) || this.parseNumber(row['% EJECUCION 2026']);
+            if (porcentajeEjecucion2026 === 0 && apropiacionDefinitiva2026 > 0) {
+              porcentajeEjecucion2026 = (compromisos2026 / apropiacionDefinitiva2026) * 100;
+            }
+            
             return {
               responsable: row['RESPONSABLE'] || '',
               totalMetas: this.parseNumber(row['TOTAL METAS']),
@@ -60,7 +74,13 @@ export class SecretariasService {
               compromisos2025: compromisos,
               pagos2025: this.parseNumber(row['PAGOS 2025']),
               porcentajeEjecucion: porcentajeEjecucion,
-            };
+              metasProgramadas2026: this.parseNumber(row['METAS PROGRAMADAS 2026']),
+              apropiacionInicial2026: this.parseNumber(row['APROPIACION INICIAL 2026']),
+              apropiacionDefinitiva2026: apropiacionDefinitiva2026,
+              compromisos2026: compromisos2026,
+              pagos2026: this.parseNumber(row['PAGOS 2026']),
+              porcentajeEjecucion2026: porcentajeEjecucion2026,
+            } as Secretaria;
           } catch (e) {
             logger.error('Error mapeando fila de secretaría:', e);
             return null;

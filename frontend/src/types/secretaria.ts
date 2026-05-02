@@ -6,5 +6,11 @@ export interface Secretaria {
   apropiacionDefinitiva2025: number;
   compromisos2025: number;
   pagos2025: number;
+  metasProgramadas2026?: number;
+  apropiacionInicial2026?: number;
+  apropiacionDefinitiva2026?: number;
+  compromisos2026?: number;
+  pagos2026?: number;
   porcentajeEjecucion: number;
+  porcentajeEjecucion2026?: number;
 }

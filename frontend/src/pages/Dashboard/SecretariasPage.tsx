@@ -16,6 +16,7 @@ const SecretariasPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [filtroResponsable, setFiltroResponsable] = useState<string>('todos');
   const [vistaTabla, setVistaTabla] = useState<'dependencia' | 'meta'>('dependencia');
+  const [añoSeleccionado, setAñoSeleccionado] = useState<'2025' | '2026'>('2026');
 
   useEffect(() => {
     cargarDatos();
@@ -64,8 +65,9 @@ const SecretariasPage = () => {
   }, [secretarias, filtroResponsable]);
 
   const datosOrdenados = useMemo(() => {
-    return [...datosFiltrados].sort((a, b) => b.apropiacionDefinitiva2025 - a.apropiacionDefinitiva2025);
-  }, [datosFiltrados]);
+    const key = añoSeleccionado === '2026' ? 'apropiacionDefinitiva2026' : 'apropiacionDefinitiva2025';
+    return [...datosFiltrados].sort((a, b) => (b[key] || 0) - (a[key] || 0));
+  }, [datosFiltrados, añoSeleccionado]);
 
   const metasFiltradas = useMemo(() => {
     if (filtroResponsable === 'todos') {
@@ -76,6 +78,10 @@ const SecretariasPage = () => {
 
   const kpis = useMemo(() => {
     // Si estamos viendo "todos", usamos la fila TOTAL que viene de la hoja
+    const apropiacionKey = añoSeleccionado === '2026' ? 'apropiacionDefinitiva2026' : 'apropiacionDefinitiva2025';
+    const compromisosKey = añoSeleccionado === '2026' ? 'compromisos2026' : 'compromisos2025';
+    const pagosKey = añoSeleccionado === '2026' ? 'pagos2026' : 'pagos2025';
+
     if (filtroResponsable === 'todos') {
       const totalRow = secretarias.find(s => {
         const resp = s.responsable?.trim();
@@ -84,14 +90,17 @@ const SecretariasPage = () => {
       
       if (totalRow) {
         // Calcular el porcentaje de ejecución basado en totales
-        const porcentajeCalculado = totalRow.apropiacionDefinitiva2025 > 0 
-          ? (totalRow.compromisos2025 / totalRow.apropiacionDefinitiva2025) * 100 
+        const totalDefinitiva = totalRow[apropiacionKey] || 0;
+        const totalCompromisos = totalRow[compromisosKey] || 0;
+        const totalPagos = totalRow[pagosKey] || 0;
+        const porcentajeCalculado = totalDefinitiva > 0 
+          ? (totalCompromisos / totalDefinitiva) * 100 
           : 0;
         
         return {
-          totalDefinitiva: totalRow.apropiacionDefinitiva2025,
-          totalCompromisos: totalRow.compromisos2025,
-          totalPagos: totalRow.pagos2025,
+          totalDefinitiva,
+          totalCompromisos,
+          totalPagos,
           promedioEjecucion: porcentajeCalculado,
           totalMetas: totalRow.totalMetas
         };
@@ -99,9 +108,9 @@ const SecretariasPage = () => {
     }
 
     // Si hay un filtro específico, usamos los datos de esa secretaría
-    const totalDefinitiva = datosFiltrados.reduce((sum, s) => sum + s.apropiacionDefinitiva2025, 0);
-    const totalCompromisos = datosFiltrados.reduce((sum, s) => sum + s.compromisos2025, 0);
-    const totalPagos = datosFiltrados.reduce((sum, s) => sum + s.pagos2025, 0);
+    const totalDefinitiva = datosFiltrados.reduce((sum, s) => sum + (s[apropiacionKey] || 0), 0);
+    const totalCompromisos = datosFiltrados.reduce((sum, s) => sum + (s[compromisosKey] || 0), 0);
+    const totalPagos = datosFiltrados.reduce((sum, s) => sum + (s[pagosKey] || 0), 0);
     // Calcular el porcentaje de ejecución basado en totales
     const promedioEjecucion = totalDefinitiva > 0 
       ? (totalCompromisos / totalDefinitiva) * 100 
@@ -115,7 +124,7 @@ const SecretariasPage = () => {
       promedioEjecucion,
       totalMetas
     };
-  }, [secretarias, datosFiltrados, filtroResponsable]);
+  }, [secretarias, datosFiltrados, filtroResponsable, añoSeleccionado]);
 
   if (loading) return <Loading />;
   if (error) return <ErrorMessage message={error} />;
@@ -128,13 +137,21 @@ const SecretariasPage = () => {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Gestión por Secretarías 2025
+              Gestión por Secretarías {añoSeleccionado}
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
               Resumen presupuestal y de metas por dependencia
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <select
+              value={añoSeleccionado}
+              onChange={(e) => setAñoSeleccionado(e.target.value as '2025' | '2026')}
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="2025">2025</option>
+              <option value="2026">2026</option>
+            </select>
             <select
               value={filtroResponsable}
               onChange={(e) => setFiltroResponsable(e.target.value)}
@@ -223,8 +240,8 @@ const SecretariasPage = () => {
                   <YAxis tickFormatter={(v) => `$${(v / 1e9).toFixed(1)}B`} />
                   <Tooltip formatter={(v: number) => formatCurrency(v)} />
                   <Legend verticalAlign="top" />
-                  <Bar dataKey="apropiacionInicial2025" name="Inicial" fill="#94a3b8" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="apropiacionDefinitiva2025" name="Definitivo" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey={`apropiacionInicial${añoSeleccionado}`} name="Inicial" fill="#94a3b8" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey={`apropiacionDefinitiva${añoSeleccionado}`} name="Definitivo" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -246,18 +263,18 @@ const SecretariasPage = () => {
                   <YAxis tickFormatter={(v) => `$${(v / 1e9).toFixed(1)}B`} />
                   <Tooltip formatter={(v: number) => formatCurrency(v)} />
                   <Legend verticalAlign="top" />
-                  <Bar dataKey="compromisos2025" name="Compromisos" fill="#6366f1" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="pagos2025" name="Pagos" fill="#10b981" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey={`compromisos${añoSeleccionado}`} name="Compromisos" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey={`pagos${añoSeleccionado}`} name="Pagos" fill="#10b981" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </ComponentCard>
 
-          <ComponentCard title="Ejecución Presupuestal 2025 (Top 10)">
+          <ComponentCard title={`Ejecución Presupuestal ${añoSeleccionado} (Top 10)`}>
             <div className="h-[350px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart 
-                  data={[...datosFiltrados].sort((a, b) => b.porcentajeEjecucion - a.porcentajeEjecucion).slice(0, 10)}
+                  data={[...datosFiltrados].sort((a, b) => (añoSeleccionado === '2026' ? (b.porcentajeEjecucion2026 || 0) : b.porcentajeEjecucion) - (añoSeleccionado === '2026' ? (a.porcentajeEjecucion2026 || 0) : a.porcentajeEjecucion)).slice(0, 10)}
                   margin={{ bottom: 60, left: 20, right: 20 }}
                   layout="horizontal"
                 >
@@ -280,9 +297,9 @@ const SecretariasPage = () => {
                     contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderRadius: '8px', border: '1px solid #e5e7eb' }}
                   />
                   <Legend verticalAlign="top" />
-                  <Bar dataKey="porcentajeEjecucion" name="% Ejecución" radius={[4, 4, 0, 0]}>
-                    {[...datosFiltrados].sort((a, b) => b.porcentajeEjecucion - a.porcentajeEjecucion).slice(0, 10).map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={getColorForPercentage(entry.porcentajeEjecucion).hex} />
+                  <Bar dataKey={añoSeleccionado === '2026' ? 'porcentajeEjecucion2026' : 'porcentajeEjecucion'} name="% Ejecución" radius={[4, 4, 0, 0]}>
+                    {[...datosFiltrados].sort((a, b) => (añoSeleccionado === '2026' ? (b.porcentajeEjecucion2026 || 0) : b.porcentajeEjecucion) - (añoSeleccionado === '2026' ? (a.porcentajeEjecucion2026 || 0) : a.porcentajeEjecucion)).slice(0, 10).map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={getColorForPercentage(añoSeleccionado === '2026' ? (entry.porcentajeEjecucion2026 || 0) : entry.porcentajeEjecucion).hex} />
                     ))}
                   </Bar>
                 </BarChart>
@@ -290,11 +307,11 @@ const SecretariasPage = () => {
             </div>
           </ComponentCard>
 
-          <ComponentCard title="Metas Programadas 2025 (Top 10)">
+          <ComponentCard title={`Metas Programadas ${añoSeleccionado} (Top 10)`}>
             <div className="h-[350px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart 
-                  data={[...datosFiltrados].sort((a, b) => b.metasProgramadas2025 - a.metasProgramadas2025).slice(0, 10)}
+                  data={[...datosFiltrados].sort((a, b) => (añoSeleccionado === '2026' ? (b.metasProgramadas2026 || 0) : (b.metasProgramadas2025 || 0)) - (añoSeleccionado === '2026' ? (a.metasProgramadas2026 || 0) : (a.metasProgramadas2025 || 0))).slice(0, 10)}
                   margin={{ bottom: 60, left: 20, right: 20 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -308,7 +325,7 @@ const SecretariasPage = () => {
                   />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="metasProgramadas2025" name="Metas Programadas" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey={añoSeleccionado === '2026' ? 'metasProgramadas2026' : 'metasProgramadas2025'} name="Metas Programadas" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -362,13 +379,13 @@ const SecretariasPage = () => {
                           Metas<br/><span className="text-[10px] normal-case">(Total / Programadas)</span>
                         </th>
                         <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Presupuesto<br/><span className="text-[10px] normal-case">Definitivo 2025</span>
+                          Presupuesto<br/><span className="text-[10px] normal-case">Definitivo {añoSeleccionado}</span>
                         </th>
                         <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Compromisos<br/><span className="text-[10px] normal-case">2025</span>
+                          Compromisos<br/><span className="text-[10px] normal-case">{añoSeleccionado}</span>
                         </th>
                         <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Pagos<br/><span className="text-[10px] normal-case">2025</span>
+                          Pagos<br/><span className="text-[10px] normal-case">{añoSeleccionado}</span>
                         </th>
                         <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           % Ejecución
@@ -384,7 +401,13 @@ const SecretariasPage = () => {
                         </tr>
                       ) : (
                         datosOrdenados.map((sec, index) => {
-                          const colorEjecucion = getColorForPercentage(sec.porcentajeEjecucion);
+                          const porcentajeEj = añoSeleccionado === '2026' ? (sec.porcentajeEjecucion2026 || 0) : sec.porcentajeEjecucion;
+                          const colorEjecucion = getColorForPercentage(porcentajeEj);
+                          const metasProgramadas = añoSeleccionado === '2026' ? (sec.metasProgramadas2026 || 0) : (sec.metasProgramadas2025 || 0);
+                          const apropiacion = añoSeleccionado === '2026' ? (sec.apropiacionDefinitiva2026 || 0) : (sec.apropiacionDefinitiva2025 || 0);
+                          const compromisos = añoSeleccionado === '2026' ? (sec.compromisos2026 || 0) : (sec.compromisos2025 || 0);
+                          const pagos = añoSeleccionado === '2026' ? (sec.pagos2026 || 0) : (sec.pagos2025 || 0);
+                          
                           return (
                             <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                               <td className="px-4 py-4 text-sm font-medium text-gray-900 dark:text-white">
@@ -395,21 +418,21 @@ const SecretariasPage = () => {
                               <td className="px-4 py-4 whitespace-nowrap text-sm text-center">
                                 <span className="text-gray-900 dark:text-white font-semibold">{sec.totalMetas}</span>
                                 <span className="text-gray-400 dark:text-gray-500 mx-1">/</span>
-                                <span className="text-gray-600 dark:text-gray-400">{sec.metasProgramadas2025}</span>
+                                <span className="text-gray-600 dark:text-gray-400">{metasProgramadas}</span>
                               </td>
                               <td className="px-4 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900 dark:text-white">
-                                {formatCurrency(sec.apropiacionDefinitiva2025)}
+                                {formatCurrency(apropiacion)}
                               </td>
                               <td className="px-4 py-4 whitespace-nowrap text-sm text-right text-blue-600 dark:text-blue-400">
-                                {formatCurrency(sec.compromisos2025)}
+                                {formatCurrency(compromisos)}
                               </td>
                               <td className="px-4 py-4 whitespace-nowrap text-sm text-right text-green-600 dark:text-green-400">
-                                {formatCurrency(sec.pagos2025)}
+                                {formatCurrency(pagos)}
                               </td>
                               <td className="px-4 py-4 whitespace-nowrap text-center">
                                 <div className="flex flex-col items-center gap-1">
                                   <span className={`px-3 py-1.5 rounded-full text-xs font-bold ${colorEjecucion.bg} ${colorEjecucion.text}`}>
-                                    {formatPercent(sec.porcentajeEjecucion)}
+                                    {formatPercent(porcentajeEj)}
                                   </span>
                                 </div>
                               </td>
@@ -440,37 +463,37 @@ const SecretariasPage = () => {
                           Responsable
                         </th>
                         <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Total<br/>Planeado 2025
+                          Total<br/>Planeado {añoSeleccionado}
                         </th>
                         <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Ejecutado<br/>2025
+                          Ejecutado<br/>{añoSeleccionado}
                         </th>
                         <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Avance<br/>2025
+                          Avance<br/>{añoSeleccionado}
                         </th>
                         <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          % Total<br/>Planeado 2025
+                          % Total<br/>Planeado {añoSeleccionado}
                         </th>
                         <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          % Total<br/>Avance 2025
+                          % Total<br/>Avance {añoSeleccionado}
                         </th>
                         <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           Estado<br/>Programado
                         </th>
                         <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Apropiación<br/>Inicial 2025
+                          Apropiación<br/>Inicial {añoSeleccionado}
                         </th>
                         <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Apropiación<br/>Definitiva 2025
+                          Apropiación<br/>Definitiva {añoSeleccionado}
                         </th>
                         <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Compromisos<br/>2025
+                          Compromisos<br/>{añoSeleccionado}
                         </th>
                         <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Pagos<br/>2025
+                          Pagos<br/>{añoSeleccionado}
                         </th>
                         <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          % Ejecución<br/>2025
+                          % Ejecución<br/>{añoSeleccionado}
                         </th>
                       </tr>
                     </thead>
@@ -483,14 +506,25 @@ const SecretariasPage = () => {
                         </tr>
                       ) : (
                         metasFiltradas.map((meta, index) => {
-                          const porcentajeEjecucion = typeof meta.ejecucion2025 === 'number' 
-                            ? meta.ejecucion2025 
-                            : parseFloat(String(meta.ejecucion2025 || '0').replace(/[^0-9.-]/g, '')) || 0;
+                          const execVal = añoSeleccionado === '2026' ? meta.ejecucion2026 : meta.ejecucion2025;
+                          const porcentajeEjecucion = typeof execVal === 'number' 
+                            ? execVal 
+                            : parseFloat(String(execVal || '0').replace(/[^0-9.-]/g, '')) || 0;
                           const colorEjecucion = getColorForPercentage(porcentajeEjecucion);
                           
-                          const porcentajePlaneado = typeof meta.porcentajeAvance2025 === 'number'
-                            ? meta.porcentajeAvance2025
-                            : parseFloat(String(meta.porcentajeAvance2025 || '0').replace(/[^0-9.-]/g, '')) || 0;
+                          const planeadoVal = añoSeleccionado === '2026' ? meta.porcentajeAvance2026 : meta.porcentajeAvance2025;
+                          const porcentajePlaneado = typeof planeadoVal === 'number'
+                            ? planeadoVal
+                            : parseFloat(String(planeadoVal || '0').replace(/[^0-9.-]/g, '')) || 0;
+                            
+                          const totalPlaneado = añoSeleccionado === '2026' ? (meta.totalPlaneado2026 || 0) : (meta.totalPlaneado2025 || 0);
+                          const totalEjecutado = añoSeleccionado === '2026' ? (meta.totalEjecutado2026 || 0) : (meta.totalEjecutado2025 || 0);
+                          const avance = añoSeleccionado === '2026' ? (meta.avance2026 || 0) : (meta.avance2025 || 0);
+                          const estadoProgramado = añoSeleccionado === '2026' ? meta.estadoProgramado2026 : meta.estadoProgramado2025;
+                          const apropiacionInicial = añoSeleccionado === '2026' ? (meta.apropiacionInicial2026 || 0) : (meta.apropiacionInicial2025 || 0);
+                          const apropiacionDefinitiva = añoSeleccionado === '2026' ? (meta.apropiacionDefinitiva2026 || 0) : (meta.apropiacionDefinitiva2025 || 0);
+                          const compromisos = añoSeleccionado === '2026' ? (meta.compromisos2026 || 0) : (meta.compromisos2025 || 0);
+                          const pagos = añoSeleccionado === '2026' ? (meta.pagos2026 || 0) : (meta.pagos2025 || 0);
                           
                           return (
                             <tr key={meta.id || index} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
@@ -505,13 +539,13 @@ const SecretariasPage = () => {
                                 </div>
                               </td>
                               <td className="px-3 py-3 whitespace-nowrap text-sm text-right text-gray-900 dark:text-white">
-                                {formatNumber(Number(meta.totalPlaneado2025 || 0), 1)}
+                                {formatNumber(Number(totalPlaneado), 1)}
                               </td>
                               <td className="px-3 py-3 whitespace-nowrap text-sm text-right text-blue-600 dark:text-blue-400">
-                                {formatNumber(Number(meta.totalEjecutado2025 || 0), 1)}
+                                {formatNumber(Number(totalEjecutado), 1)}
                               </td>
                               <td className="px-3 py-3 whitespace-nowrap text-sm text-right text-purple-600 dark:text-purple-400">
-                                {formatNumber(Number(meta.avance2025 || 0), 1)}
+                                {formatNumber(Number(avance), 1)}
                               </td>
                               <td className="px-3 py-3 whitespace-nowrap text-center text-sm">
                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${getColorForPercentage(porcentajePlaneado).bg} ${getColorForPercentage(porcentajePlaneado).text}`}>
@@ -519,30 +553,30 @@ const SecretariasPage = () => {
                                 </span>
                               </td>
                               <td className="px-3 py-3 whitespace-nowrap text-center text-sm">
-                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getColorForPercentage(Number(meta.avance2025 || 0)).bg} ${getColorForPercentage(Number(meta.avance2025 || 0)).text}`}>
-                                  {formatPercent(Number(meta.avance2025 || 0))}
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getColorForPercentage(Number(avance)).bg} ${getColorForPercentage(Number(avance)).text}`}>
+                                  {formatPercent(Number(avance))}
                                 </span>
                               </td>
                               <td className="px-3 py-3 whitespace-nowrap text-center text-sm">
                                 <span className={`px-2 py-1 rounded-lg text-xs font-medium ${
-                                  meta.estadoProgramado2025 === 'PROGRAMADO' 
+                                  estadoProgramado === 'PROGRAMADO' 
                                     ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                                     : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
                                 }`}>
-                                  {meta.estadoProgramado2025 || 'N/A'}
+                                  {estadoProgramado || 'N/A'}
                                 </span>
                               </td>
                               <td className="px-3 py-3 whitespace-nowrap text-sm text-right text-gray-700 dark:text-gray-300">
-                                {formatCurrency(Number(meta.apropiacionInicial2025 || 0))}
+                                {formatCurrency(Number(apropiacionInicial))}
                               </td>
                               <td className="px-3 py-3 whitespace-nowrap text-sm text-right font-medium text-gray-900 dark:text-white">
-                                {formatCurrency(Number(meta.apropiacionDefinitiva2025 || 0))}
+                                {formatCurrency(Number(apropiacionDefinitiva))}
                               </td>
                               <td className="px-3 py-3 whitespace-nowrap text-sm text-right text-blue-600 dark:text-blue-400">
-                                {formatCurrency(Number(meta.compromisos2025 || 0))}
+                                {formatCurrency(Number(compromisos))}
                               </td>
                               <td className="px-3 py-3 whitespace-nowrap text-sm text-right text-green-600 dark:text-green-400">
-                                {formatCurrency(Number(meta.pagos2025 || 0))}
+                                {formatCurrency(Number(pagos))}
                               </td>
                               <td className="px-3 py-3 whitespace-nowrap text-center">
                                 <span className={`px-3 py-1.5 rounded-full text-xs font-bold ${colorEjecucion.bg} ${colorEjecucion.text}`}>

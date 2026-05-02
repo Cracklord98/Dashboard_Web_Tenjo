@@ -146,6 +146,13 @@ export interface ProyectoDTO {
   pagos2025?: number;
   porcentajeEjecucion2025?: number;
   
+  // Datos 2026
+  apropiacionInicial2026?: number;
+  apropiacionDefinitiva2026?: number;
+  compromisos2026?: number;
+  pagos2026?: number;
+  porcentajeEjecucion2026?: number;
+  
   // Totales
   totalAsignado?: number;
   totalCompromisos?: number;

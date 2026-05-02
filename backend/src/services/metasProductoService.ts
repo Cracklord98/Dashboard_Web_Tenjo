@@ -15,16 +15,20 @@ interface MetaProducto {
   responsable: string;
   avance2024: number;
   avance2025: number;
+  avance2026: number;
   // Estados programado/no programado
   estadoProgramado2024?: string;
   estadoProgramado2025?: string;
+  estadoProgramado2026?: string;
   // Porcentajes de avance
   porcentajeAvance2024?: number;
   porcentajeAvance2025?: number;
+  porcentajeAvance2026?: number;
   porcentajeAvanceCuatrienio?: number;
   // URLs de soportes
   soportes2024?: string;
   soportes2025?: string;
+  soportes2026?: string;
   
   // Campos financieros 2024
   apropiacion2024?: number;
@@ -41,11 +45,20 @@ interface MetaProducto {
   pagos2025?: number;
   ejecucion2025?: number;
   
+  // Campos financieros 2026
+  apropiacionInicial2026?: number;
+  apropiacionDefinitiva2026?: number;
+  compromisos2026?: number;
+  pagos2026?: number;
+  ejecucion2026?: number;
+  
   // Campos de planificación y ejecución física
   totalPlaneado2024?: number;
   totalEjecutado2024?: number;
   totalPlaneado2025?: number;
   totalEjecutado2025?: number;
+  totalPlaneado2026?: number;
+  totalEjecutado2026?: number;
   
   // Trimestres 2024
   t1Planeado2024?: number;
@@ -67,6 +80,16 @@ interface MetaProducto {
   t4Planeado2025?: number;
   t4Ejecutado2025?: number;
   
+  // Trimestres 2026
+  t1Planeado2026?: number;
+  t1Ejecutado2026?: number;
+  t2Planeado2026?: number;
+  t2Ejecutado2026?: number;
+  t3Planeado2026?: number;
+  t3Ejecutado2026?: number;
+  t4Planeado2026?: number;
+  t4Ejecutado2026?: number;
+  
   // Campos adicionales
   lineaBase?: string;
   indicador?: string;
@@ -83,10 +106,13 @@ interface MetaDetalle extends MetaProducto {
   lineaBase: string;
   meta2024: string;
   meta2025: string;
+  meta2026: string;
   presupuesto2024: number;
   presupuesto2025: number;
+  presupuesto2026: number;
   ejecutado2024: number;
   ejecutado2025: number;
+  ejecutado2026: number;
   trimestres: {
     t1: { planificado: number; ejecutado: number };
     t2: { planificado: number; ejecutado: number };
@@ -119,6 +145,7 @@ export class MetasProductoService {
     // Obtener estados programado para ambos años con fallback
     const estadoProg2024 = row['ESTADO PROGRAMADO-NO PROGRAMADO 2024'] || '';
     const estadoProg2025 = row['ESTADO PROGRAMADO-NO PROGRAMADO 2025'] || estadoProg2024; // Fallback a 2024 si 2025 no existe
+    const estadoProg2026 = row['ESTADO PROGRAMADO-NO PROGRAMADO 2026'] || estadoProg2025; // Fallback a 2025 si 2026 no existe
     
     return {
       id: index + 1,
@@ -133,16 +160,20 @@ export class MetasProductoService {
       responsable: row['RESPONSABLE'] || 'No asignado',
       avance2024: this.calcularAvance(row, '2024'),
       avance2025: this.calcularAvance(row, '2025'),
+      avance2026: this.calcularAvance(row, '2026'),
       // Estados programado/no programado - asegurar que siempre tengan valor
       estadoProgramado2024: estadoProg2024,
       estadoProgramado2025: estadoProg2025,
+      estadoProgramado2026: estadoProg2026,
       // Porcentajes de avance
       porcentajeAvance2024: this.parseNumber(row['% TOTAL AVANCE 2024']),
       porcentajeAvance2025: this.parseNumber(row['% TOTAL AVANCE 2025']),
+      porcentajeAvance2026: this.parseNumber(row['% TOTAL AVANCE 2026']),
       porcentajeAvanceCuatrienio: this.parseNumber(row['PORCENTAJE TOTAL PDM AVANCE CUATRIENIO']),
       // Extraer URLs de hipervínculos (solo disponible con API)
       soportes2024: row[' SOPORTES DE CUMPLIMIENTO 2024_URL'] || '',
       soportes2025: row[' SOPORTES DE CUMPLIMIENTO 2025_URL'] || '',
+      soportes2026: row[' SOPORTES DE CUMPLIMIENTO 2026_URL'] || '',
       
       // Campos financieros 2024
       apropiacion2024: this.parseNumber(row['APROPIACION 2024']),
@@ -159,11 +190,20 @@ export class MetasProductoService {
       pagos2025: this.parseNumber(row['PAGOS 2025']),
       ejecucion2025: this.parseNumber(row['% EJECUCION 2025']),
       
+      // Campos financieros 2026
+      apropiacionInicial2026: this.parseNumber(row['APROPIACION INICIAL 2026']),
+      apropiacionDefinitiva2026: this.parseNumber(row['APROPIACION DEFINITIVA 2026']),
+      compromisos2026: this.parseNumber(row['COMPROMISOS 2026']),
+      pagos2026: this.parseNumber(row['PAGOS 2026']),
+      ejecucion2026: this.parseNumber(row['% EJECUCION 2026']) || this.parseNumber(row['% EJECUCIÓN PPTO 2026']),
+      
       // Campos de planificación y ejecución física
       totalPlaneado2024: this.parseNumber(row['TOTAL PLANEADO 2024']),
       totalEjecutado2024: this.parseNumber(row['TOTAL EJECUTADO 2024']),
       totalPlaneado2025: this.parseNumber(row['TOTAL PLANEADO 2025']),
       totalEjecutado2025: this.parseNumber(row['TOTAL EJECUTADO 2025']),
+      totalPlaneado2026: this.parseNumber(row['TOTAL PLANEADO 2026']),
+      totalEjecutado2026: this.parseNumber(row['TOTAL EJECUTADO 2026']),
       
       // Trimestres 2024
       t1Planeado2024: this.parseNumber(row['T1. PLANEADO 2024']),
@@ -173,7 +213,7 @@ export class MetasProductoService {
       t3Planeado2024: this.parseNumber(row['T3. PLANEADO 2024']),
       t3Ejecutado2024: this.parseNumber(row['T3. EJECUTADO 2024']),
       t4Planeado2024: this.parseNumber(row['T4. PLANEADO 2024']),
-      t4Ejecutado2024: this.parseNumber(row['T.4 EJECUTADO 2024']),
+      t4Ejecutado2024: this.parseNumber(row['T4. EJECUTADO 2024']),
       
       // Trimestres 2025
       t1Planeado2025: this.parseNumber(row['T1. PLANEADO 2025']),
@@ -183,7 +223,17 @@ export class MetasProductoService {
       t3Planeado2025: this.parseNumber(row['T3. PLANEADO 2025']),
       t3Ejecutado2025: this.parseNumber(row['T3. EJECUTADO 2025']),
       t4Planeado2025: this.parseNumber(row['T4. PLANEADO 2025']),
-      t4Ejecutado2025: this.parseNumber(row['T.4 EJECUTADO 2025']),
+      t4Ejecutado2025: this.parseNumber(row['T4. EJECUTADO 2025']),
+      
+      // Trimestres 2026
+      t1Planeado2026: this.parseNumber(row['T1. PLANEADO 2026']),
+      t1Ejecutado2026: this.parseNumber(row['T1. EJECUTADO 2026']),
+      t2Planeado2026: this.parseNumber(row['T2. PLANEADO 2026']),
+      t2Ejecutado2026: this.parseNumber(row['T2. EJECUTADO 2026']),
+      t3Planeado2026: this.parseNumber(row['T3. PLANEADO 2026']),
+      t3Ejecutado2026: this.parseNumber(row['T3. EJECUTADO 2026']),
+      t4Planeado2026: this.parseNumber(row['T4. PLANEADO 2026']),
+      t4Ejecutado2026: this.parseNumber(row['T4. EJECUTADO 2026']),
       
       // Campos adicionales de detalle
       lineaBase: row['L.B'] || '',
@@ -215,7 +265,8 @@ export class MetasProductoService {
   private calcularEstado(row: Record<string, any>): string {
     const avance2024 = this.calcularAvance(row, '2024');
     const avance2025 = this.calcularAvance(row, '2025');
-    const avancePromedio = (avance2024 + avance2025) / 2;
+    const avance2026 = this.calcularAvance(row, '2026');
+    const avancePromedio = (avance2024 + avance2025 + avance2026) / 3;
     
     if (avancePromedio >= 100) return 'Cumplido';
     if (avancePromedio >= 70) return 'En proceso';
@@ -368,10 +419,13 @@ export class MetasProductoService {
         lineaBase: row['L.B'] || '',
         meta2024: row['VALOR ESPERADO 2024'] || '',
         meta2025: row['VALOR ESPERADO 2025'] || '',
+        meta2026: row['VALOR ESPERADO 2026'] || '',
         presupuesto2024: meta.apropiacion2024 ?? this.parseNumber(row['APROPIACION 2024']),
         presupuesto2025: meta.apropiacionDefinitiva2025 ?? this.parseNumber(row['APROPIACION DEFINITIVA 2025']),
+        presupuesto2026: meta.apropiacionDefinitiva2026 ?? this.parseNumber(row['APROPIACION DEFINITIVA 2026']),
         ejecutado2024: meta.totalEjecutado2024 ?? this.parseNumber(row['TOTAL EJECUTADO 2024']),
         ejecutado2025: meta.totalEjecutado2025 ?? this.parseNumber(row['TOTAL EJECUTADO 2025']),
+        ejecutado2026: meta.totalEjecutado2026 ?? this.parseNumber(row['TOTAL EJECUTADO 2026']),
         trimestres: {
           t1: {
             planificado: this.parseNumber(row['T1 PLANIFICADO'] || row['Q1 PLAN']),
