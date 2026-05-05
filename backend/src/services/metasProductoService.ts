@@ -166,10 +166,10 @@ export class MetasProductoService {
       estadoProgramado2025: estadoProg2025,
       estadoProgramado2026: estadoProg2026,
       // Porcentajes de avance
-      porcentajeAvance2024: this.parseNumber(row['% TOTAL AVANCE 2024']),
-      porcentajeAvance2025: this.parseNumber(row['% TOTAL AVANCE 2025']),
-      porcentajeAvance2026: this.parseNumber(row['% TOTAL AVANCE 2026']),
-      porcentajeAvanceCuatrienio: this.parseNumber(row['PORCENTAJE TOTAL PDM AVANCE CUATRIENIO']),
+      porcentajeAvance2024: this.parsePorcentaje(row['% TOTAL AVANCE 2024']),
+      porcentajeAvance2025: this.parsePorcentaje(row['% TOTAL AVANCE 2025']),
+      porcentajeAvance2026: this.parsePorcentaje(row['% AVANCE 2026']) || this.parsePorcentaje(row['% TOTAL AVANCE 2026']),
+      porcentajeAvanceCuatrienio: this.parsePorcentaje(row['PORCENTAJE TOTAL PDM AVANCE CUATRIENIO']),
       // Extraer URLs de hipervínculos (solo disponible con API)
       soportes2024: row[' SOPORTES DE CUMPLIMIENTO 2024_URL'] || '',
       soportes2025: row[' SOPORTES DE CUMPLIMIENTO 2025_URL'] || '',
@@ -202,8 +202,8 @@ export class MetasProductoService {
       totalEjecutado2024: this.parseNumber(row['TOTAL EJECUTADO 2024']),
       totalPlaneado2025: this.parseNumber(row['TOTAL PLANEADO 2025']),
       totalEjecutado2025: this.parseNumber(row['TOTAL EJECUTADO 2025']),
-      totalPlaneado2026: this.parseNumber(row['TOTAL PLANEADO 2026']),
-      totalEjecutado2026: this.parseNumber(row['TOTAL EJECUTADO 2026']),
+      totalPlaneado2026: this.parseNumber(row['TOTAL PLANEADO 2026']) || this.parseNumber(row['VALOR ESPERADO 2026']),
+      totalEjecutado2026: this.parseNumber(row['TOTAL EJECUTADO 2026']) || this.parseNumber(row['VALOR EJECUTADO 2026']),
       
       // Trimestres 2024
       t1Planeado2024: this.parseNumber(row['T1. PLANEADO 2024']),
@@ -330,6 +330,28 @@ export class MetasProductoService {
     
     const parsed = parseFloat(cleaned);
     return isNaN(parsed) ? 0 : parsed;
+  }
+
+  /**
+   * Parsea un valor que debe ser porcentaje.
+   * Maneja tanto formato "10%" como "0.10".
+   */
+  private parsePorcentaje(value: any): number {
+    if (!value) return 0;
+    
+    // Si viene como string y tiene %, parseNumber ya le quita el % y devuelve 10 (por ejemplo)
+    const strValue = value.toString().trim();
+    const hasPercentSign = strValue.includes('%');
+    
+    const parsed = this.parseNumber(value);
+    
+    // Si no tenía signo de % y el valor es menor o igual a 1 (ej: 0.10),
+    // asumimos que es una fracción y la convertimos a porcentaje (10)
+    if (!hasPercentSign && parsed > 0 && parsed <= 1) {
+      return parsed * 100;
+    }
+    
+    return parsed;
   }
 
   /**
